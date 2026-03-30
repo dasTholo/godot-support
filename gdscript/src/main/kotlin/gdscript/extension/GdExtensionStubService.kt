@@ -47,11 +47,17 @@ class GdExtensionStubService(private val project: Project) {
         // Step 3: Collect details for all extension types via LSP (batched)
         val typeInfos = collector.collectAllTypeDetails(extensionTypes)
 
-        // Step 3b: Enrich with static method info from Rust source
+        // Step 3b: Enrich with Rust source data (full signatures + base class + static methods)
         val rustResolver = GdExtensionRustResolver.getInstance(project)
         val enrichedTypeInfos = typeInfos.map { type ->
+            val rustMethods = rustResolver.collectMethodSignatures(type.name)
+            val baseClass = rustResolver.getBaseClass(type.name)
             val staticMethods = rustResolver.collectStaticMethods(type.name)
-            if (staticMethods.isNotEmpty()) type.copy(staticMethods = staticMethods) else type
+            type.copy(
+                inherits = baseClass ?: type.inherits,
+                staticMethods = staticMethods,
+                rustMethods = rustMethods.ifEmpty { null }
+            )
         }
 
         // Step 4: Write stub files

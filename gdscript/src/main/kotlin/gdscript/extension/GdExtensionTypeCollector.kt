@@ -24,13 +24,26 @@ data class GdExtSignalInfo(
     val name: String
 )
 
+data class RustMethodParam(
+    val name: String,
+    val type: String
+)
+
+data class RustMethodInfo(
+    val name: String,
+    val params: List<RustMethodParam>,
+    val returnType: String,
+    val isStatic: Boolean
+)
+
 data class GdExtTypeInfo(
     val name: String,
     val inherits: String,
     val methods: List<GdExtMethodInfo>,
     val properties: List<GdExtPropertyInfo>,
     val signals: List<GdExtSignalInfo>,
-    val staticMethods: Set<String> = emptySet()
+    val staticMethods: Set<String> = emptySet(),
+    val rustMethods: List<RustMethodInfo>? = null
 )
 
 class GdExtensionTypeCollector(private val project: Project, private val godotProjectPath: String) {

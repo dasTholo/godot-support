@@ -1007,7 +1007,11 @@ class GdLexerHighlighter implements FlexLexer {
           // fall through
           case 126: break;
           case 39:
-            { return GdTypes.DOTDOT;
+            { if (zzMarkedPos < zzBuffer.length() && zzBuffer.charAt(zzMarkedPos) == '.') {
+                zzMarkedPos++;
+                return GdTypes.ELLIPSIS;
+              }
+              return GdTypes.DOTDOT;
             }
           // fall through
           case 127: break;

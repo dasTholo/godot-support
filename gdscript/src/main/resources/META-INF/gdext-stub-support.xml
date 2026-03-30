@@ -2,6 +2,8 @@
     <!-- Extensions that require godot.lsp plugin to be installed -->
     <extensions defaultExtensionNs="com.intellij">
         <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
+        <gotoDeclarationHandler implementation="gdscript.extension.GdExtensionGotoDeclarationHandler" order="first"/>
+        <projectService serviceImplementation="gdscript.extension.GdExtensionRustResolver"/>
     </extensions>
 
     <actions>

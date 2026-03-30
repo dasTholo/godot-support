@@ -30,3 +30,5 @@ community/nuget
 NuGet.Config
 
 *.hprof
+
+docs/

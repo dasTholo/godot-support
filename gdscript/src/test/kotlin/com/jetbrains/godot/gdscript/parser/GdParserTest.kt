@@ -26,6 +26,7 @@ class GdParserTest : GdParsingTestCase() {
     @Test fun testSignal() = doTest(true)
     @Test fun testEnumAnonymous() = doTest(true)
     @Test fun testMethodVararg() = doTest(true)
+    @Test fun testMethodEllipsisVararg() = doTest(true)
     @Test fun testMethodArrayReturnType() = doTest(true)
     @Test fun testClass() = doTest(true)
     @Test fun testCommentWithinCode() = doTest(true)

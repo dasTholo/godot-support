@@ -1,5 +1,6 @@
 package gdscript.parser.expr
 
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import gdscript.parser.GdPsiBuilder
 import gdscript.parser.common.GdParamListParser
@@ -29,7 +30,14 @@ object GdFuncDeclExParser : GdExprBaseParser() {
         ok = ok && b.consumeToken(RRBR)
         ok = ok && GdReturnHintParser.parse(b, l + 1, true)
         ok = ok && b.consumeToken(COLON)
-        ok = ok && GdStmtParser.parseLambda(b, l + 1, false, true)
+        ok = ok && GdStmtParser.parseLambda(b, l + 1, false, true, isLambdaEntry = true)
+
+        // After lambda body in args, skip lexer indentation artifacts
+        if (ok && b.isArgs) {
+            while (b.nextTokenIs(NEW_LINE, DEDENT, INDENT)) {
+                b.remapCurrentToken(TokenType.WHITE_SPACE)
+            }
+        }
 
         if (ok || b.pinned()) GdRecovery.stmt(b)
 

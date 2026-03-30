@@ -45,12 +45,21 @@ object GdExtensionStubWriter {
         }
         if (type.properties.isNotEmpty()) sb.appendLine()
 
-        // Methods
-        for (method in type.methods) {
-            val params = method.params.joinToString(", ") { "${it.first}: ${it.second}" }
-            val ret = if (method.returnType == "void") " -> void" else " -> ${method.returnType}"
-            val prefix = if (method.name in type.staticMethods) "static func" else "func"
-            sb.appendLine("$prefix ${method.name}($params)$ret: pass")
+        // Methods — prefer Rust-sourced signatures when available
+        if (type.rustMethods != null) {
+            for (method in type.rustMethods) {
+                val params = method.params.joinToString(", ") { "${it.name}: ${it.type}" }
+                val ret = " -> ${method.returnType}"
+                val prefix = if (method.isStatic) "static func" else "func"
+                sb.appendLine("$prefix ${method.name}($params)$ret: pass")
+            }
+        } else {
+            for (method in type.methods) {
+                val params = method.params.joinToString(", ") { "${it.first}: ${it.second}" }
+                val ret = if (method.returnType == "void") " -> void" else " -> ${method.returnType}"
+                val prefix = if (method.name in type.staticMethods) "static func" else "func"
+                sb.appendLine("$prefix ${method.name}($params)$ret: pass")
+            }
         }
 
         return sb.toString()
