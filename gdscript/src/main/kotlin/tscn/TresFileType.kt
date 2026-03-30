@@ -2,7 +2,7 @@ package tscn
 
 import GdScriptPluginIcons
 import com.intellij.openapi.fileTypes.LanguageFileType
-import com.jetbrains.rider.godot.community.tscn.TscnLanguage
+import com.jetbrains.rustrover.godot.community.tscn.TscnLanguage
 import gdscript.GdScriptBundle
 import javax.swing.Icon
 

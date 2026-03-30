@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerState
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
-import com.jetbrains.rider.godot.community.actions.StartGodotEditorAction
+import com.jetbrains.rustrover.godot.community.actions.StartGodotEditorAction
 import gdscript.GdScriptBundle
 import javax.swing.Icon
 

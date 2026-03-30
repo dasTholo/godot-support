@@ -1,7 +1,7 @@
 package gdscript.psi
 
 import com.intellij.psi.tree.IElementType
-import com.jetbrains.rider.godot.community.gdscript.GdLanguage
+import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
 import org.jetbrains.annotations.NonNls
 
 class GdTokenType(debugName: @NonNls String) :

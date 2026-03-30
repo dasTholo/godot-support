@@ -1,4 +1,4 @@
-package com.intellij.rider.plugins.godot.gdscript.icons;
+package com.intellij.rustrover.plugins.godot.gdscript.icons;
 
 import com.intellij.ui.IconManager;
 import org.jetbrains.annotations.NotNull;
@@ -9,9 +9,9 @@ import javax.swing.*;
  * NOTE THIS FILE IS AUTO-GENERATED
  * DO NOT EDIT IT BY HAND, run "Generate icon classes" configuration instead
  */
-public final class RiderPluginsGodotGdscriptIcons {
+public final class RustRoverPluginsGodotGdscriptIcons {
   private static @NotNull Icon load(@NotNull String path, int cacheKey, int flags) {
-    return IconManager.getInstance().loadRasterizedIcon(path, RiderPluginsGodotGdscriptIcons.class.getClassLoader(), cacheKey, flags);
+    return IconManager.getInstance().loadRasterizedIcon(path, RustRoverPluginsGodotGdscriptIcons.class.getClassLoader(), cacheKey, flags);
   }
 
   public static final class GodotEditor {

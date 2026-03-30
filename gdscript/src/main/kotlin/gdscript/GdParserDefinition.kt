@@ -13,7 +13,7 @@ import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.psi.tree.TokenSet
-import com.jetbrains.rider.godot.community.gdscript.GdLanguage
+import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
 import gdscript.parser.GdRootParser
 import gdscript.psi.GdFile
 import gdscript.psi.GdTypes

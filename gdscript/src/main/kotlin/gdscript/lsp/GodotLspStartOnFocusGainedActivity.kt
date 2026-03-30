@@ -6,8 +6,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.wm.IdeFrame
-import com.jetbrains.rider.godot.community.utils.GodotCommunityUtil
-import com.jetbrains.rider.godot.community.utils.GodotFileUtil
+import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
+import com.jetbrains.rustrover.godot.community.utils.GodotFileUtil
 import common.util.GdScriptProjectLifetimeService
 import gdscript.settings.GdLspConnectionMode
 import gdscript.settings.GdLspSettingsFlowService

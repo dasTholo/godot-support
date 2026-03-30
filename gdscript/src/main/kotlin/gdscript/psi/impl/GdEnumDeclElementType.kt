@@ -6,7 +6,7 @@ import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import com.jetbrains.rider.godot.community.gdscript.GdLanguage
+import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
 import gdscript.index.Indices
 import gdscript.index.stub.GdEnumDeclStub
 import gdscript.index.stub.GdEnumDeclStubImpl

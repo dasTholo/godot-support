@@ -2,7 +2,7 @@ package gdscript.utils
 
 import GdProjectService
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.godot.community.GodotProjectProvider
+import com.jetbrains.rustrover.godot.community.GodotProjectProvider
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

@@ -11,10 +11,10 @@ import com.intellij.platform.lsp.api.LspServerManagerListener
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import com.jetbrains.rider.godot.community.actions.StartGodotEditorAction
-import com.jetbrains.rider.godot.community.utils.GodotCommunityUtil
-import com.jetbrains.rider.godot.community.utils.GodotFileUtil
-import com.jetbrains.rider.godot.community.utils.hasCompletedTrue
+import com.jetbrains.rustrover.godot.community.actions.StartGodotEditorAction
+import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
+import com.jetbrains.rustrover.godot.community.utils.GodotFileUtil
+import com.jetbrains.rustrover.godot.community.utils.hasCompletedTrue
 import common.util.GdScriptProjectLifetimeService
 import gdscript.GdScriptBundle
 import gdscript.settings.GdLspConnectionMode

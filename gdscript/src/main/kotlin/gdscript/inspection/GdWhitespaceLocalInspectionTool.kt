@@ -8,7 +8,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.util.DocumentUtil
-import com.jetbrains.rider.godot.community.gdscript.GdFileType
+import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
 import gdscript.GdScriptBundle
 import gdscript.inspection.fixes.GdFixIndentsQuickFix
 
