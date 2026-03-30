@@ -49,7 +49,8 @@ object GdExtensionStubWriter {
         for (method in type.methods) {
             val params = method.params.joinToString(", ") { "${it.first}: ${it.second}" }
             val ret = if (method.returnType == "void") " -> void" else " -> ${method.returnType}"
-            sb.appendLine("func ${method.name}($params)$ret: pass")
+            val prefix = if (method.name in type.staticMethods) "static func" else "func"
+            sb.appendLine("$prefix ${method.name}($params)$ret: pass")
         }
 
         return sb.toString()
