@@ -31,10 +31,11 @@ data class GdExtTypeInfo(
  * Queries the Godot LSP for all available types, then fetches method/property
  * details for types not already known to the SDK.
  */
-class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
+class GdExtensionTypeCollector(private val client: GdExtensionLspClient, private val godotProjectPath: String) {
+
+    private val probeUri = "file://$godotProjectPath/_gdext_probe.gd"
 
     companion object {
-        private const val PROBE_URI = "file:///tmp/_gdext_probe.gd"
         private const val LSP_KIND_METHOD = 2
         private const val LSP_KIND_PROPERTY = 10
         private const val LSP_KIND_SIGNAL = 23 // Event kind
@@ -48,11 +49,30 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
         openDocument("extends Node\nvar _x: ")
 
         val result = client.sendRequest("textDocument/completion", mapOf(
-            "textDocument" to mapOf("uri" to PROBE_URI),
+            "textDocument" to mapOf("uri" to probeUri),
             "position" to mapOf("line" to 1, "character" to 8)
-        )) ?: return emptyList()
+        ))
+
+        if (result == null) {
+            thisLogger().warn("LSP completion returned null")
+            return emptyList()
+        }
+
+        thisLogger().info("LSP completion result type: ${result.javaClass.simpleName}, isArray=${result.isJsonArray}, isObject=${result.isJsonObject}")
 
         val items = extractCompletionItems(result)
+        thisLogger().info("Extracted ${items.size} completion items")
+
+        if (items.isNotEmpty()) {
+            val kinds = items.mapNotNull { it.get("kind")?.asInt }.distinct().sorted()
+            thisLogger().info("Completion item kinds present: $kinds")
+            val classItems = items.filter { it.get("kind")?.asInt == LSP_KIND_CLASS }
+            thisLogger().info("Found ${classItems.size} class items (kind=$LSP_KIND_CLASS)")
+            if (classItems.isEmpty() && items.size <= 10) {
+                items.forEach { thisLogger().info("  item: label=${it.get("label")}, kind=${it.get("kind")}") }
+            }
+        }
+
         return items
             .filter { it.get("kind")?.asInt == LSP_KIND_CLASS }
             .map { it.get("label").asString }
@@ -71,7 +91,7 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
         openDocument(doc)
 
         val result = client.sendRequest("textDocument/completion", mapOf(
-            "textDocument" to mapOf("uri" to PROBE_URI),
+            "textDocument" to mapOf("uri" to probeUri),
             "position" to mapOf("line" to 3, "character" to 4)
         )) ?: return GdExtTypeInfo(typeName, inherits, emptyList(), emptyList(), emptyList())
 
@@ -110,7 +130,7 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
         openDocument(doc)
 
         val result = client.sendRequest("textDocument/hover", mapOf(
-            "textDocument" to mapOf("uri" to PROBE_URI),
+            "textDocument" to mapOf("uri" to probeUri),
             "position" to mapOf("line" to 1, "character" to 10)
         ))
 
@@ -129,7 +149,7 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
         openDocument(doc)
 
         val result = client.sendRequest("textDocument/hover", mapOf(
-            "textDocument" to mapOf("uri" to PROBE_URI),
+            "textDocument" to mapOf("uri" to probeUri),
             "position" to mapOf("line" to 3, "character" to 5)
         ))
 
@@ -166,13 +186,13 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient) {
     private fun openDocument(text: String) {
         // Close previous document
         client.sendNotification("textDocument/didClose", mapOf(
-            "textDocument" to mapOf("uri" to PROBE_URI)
+            "textDocument" to mapOf("uri" to probeUri)
         ))
 
         // Open new document
         client.sendNotification("textDocument/didOpen", mapOf(
             "textDocument" to mapOf(
-                "uri" to PROBE_URI,
+                "uri" to probeUri,
                 "languageId" to "gdscript",
                 "version" to 1,
                 "text" to text

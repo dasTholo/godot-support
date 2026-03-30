@@ -32,7 +32,7 @@ class GdExtensionStubService(private val project: Project) {
                 return
             }
 
-            val collector = GdExtensionTypeCollector(client)
+            val collector = GdExtensionTypeCollector(client, godotDir?.absolutePath ?: basePath)
 
             // Step 1: Get all type names from LSP
             val allTypeNames = collector.collectAllTypeNames()
