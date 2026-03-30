@@ -30,6 +30,4 @@ class GodotLspSettingsConfigurable : BoundConfigurable(GodotLspBundle.message("s
                 .columns(6)
         }
     }
-
-    override fun getId(): String = "godot.lsp.settings"
 }
