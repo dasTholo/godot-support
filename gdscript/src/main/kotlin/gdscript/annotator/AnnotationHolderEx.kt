@@ -7,7 +7,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.Key
 import com.intellij.testFramework.TestModeFlags
-import gdscript.utils.isRiderGodotSupportPluginInstalled
+import gdscript.utils.isRustRoverGodotSupportPluginInstalled
 import org.jetbrains.annotations.NotNull
 
 /**
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull
 @JvmField
 val GD_ANNOTATOR_ORIGINAL_SEVERITY: Key<Boolean> = Key.create("gdAnnotatorOriginalSeverity")
 
-val isGodotSupportInstalled = PluginManagerCore.isRiderGodotSupportPluginInstalled()
+val isGodotSupportInstalled = PluginManagerCore.isRustRoverGodotSupportPluginInstalled()
 
 /**
  * Downgrades GDScript annotator severities to [HighlightSeverity.INFORMATION] in production

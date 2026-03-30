@@ -12,7 +12,10 @@ import gdscript.psi.GdTypes.FUNC
 import gdscript.psi.GdTypes.FUNC_DECL_EX
 import gdscript.psi.GdTypes.FUNC_DECL_ID_NMI
 import gdscript.psi.GdTypes.IDENTIFIER
+import gdscript.psi.GdTypes.DEDENT
+import gdscript.psi.GdTypes.INDENT
 import gdscript.psi.GdTypes.LRBR
+import gdscript.psi.GdTypes.NEW_LINE
 import gdscript.psi.GdTypes.RRBR
 
 object GdFuncDeclExParser : GdExprBaseParser() {

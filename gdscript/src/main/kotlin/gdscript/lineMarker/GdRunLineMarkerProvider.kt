@@ -7,7 +7,7 @@ import com.intellij.psi.PsiFile
 import gdscript.action.GdRunAction
 import gdscript.psi.GdInheritanceIdRef
 import gdscript.psi.utils.GdInheritanceUtil
-import gdscript.utils.isRiderGodotSupportPluginInstalled
+import gdscript.utils.isRustRoverGodotSupportPluginInstalled
 
 /**
  * Run current scene LineMarker
@@ -16,7 +16,7 @@ class GdRunLineMarkerProvider : RunLineMarkerContributor() {
 
     override fun getInfo(element: PsiElement): Info? {
         // RIDER-126489 Run configuration in the GdScript plugin
-        if (PluginManagerCore.isRiderGodotSupportPluginInstalled())
+        if (PluginManagerCore.isRustRoverGodotSupportPluginInstalled())
             return null
         if (element.parent !is GdInheritanceIdRef || GdInheritanceUtil.isExtending(element, "Resource"))
             return null
