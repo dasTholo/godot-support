@@ -1,3 +1,13 @@
 <idea-plugin>
     <!-- Extensions that require godot.lsp plugin to be installed -->
+    <extensions defaultExtensionNs="com.intellij">
+        <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
+    </extensions>
+
+    <actions>
+        <action id="GdExtensionRefreshAction" class="gdscript.extension.GdExtensionRefreshAction"
+                text="Refresh GDExtension Types" description="Regenerate GDExtension type stubs from Godot LSP">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

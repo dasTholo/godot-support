@@ -39,7 +39,6 @@
     <automaticRenamerFactory implementation="gdscript.codeInsight.renamer.GdFileAutomaticRenamerFactory" />
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
-    <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
     <projectViewNestingRulesProvider implementation="gdscript.structureView.GdFileNesting"/>
     <toolWindow id="TscnScenePreviewWindowId"
                 anchor="right"
@@ -224,10 +223,6 @@
     </action>
     <action id="GdAddTraitAction" class="gdscript.action.GdAddTraitAction">
       <add-to-group group-id="GenerateGroup" anchor="first" />
-    </action>
-    <action id="GdExtensionRefreshAction" class="gdscript.extension.GdExtensionRefreshAction"
-            text="Refresh GDExtension Types" description="Regenerate GDExtension type stubs from Godot LSP">
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
   </actions>
 
