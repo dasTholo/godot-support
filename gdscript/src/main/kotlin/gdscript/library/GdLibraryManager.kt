@@ -72,6 +72,50 @@ object GdLibraryManager {
         }
     }
 
+    fun registerLibrary(name: String, path: Path, project: Project) {
+        val sourceRoot = LocalFileSystem.getInstance().refreshAndFindFileByPath(path.pathString)
+
+        if (sourceRoot == null) {
+            thisLogger().warn("Cannot find library source at $path")
+            return
+        }
+
+        val libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
+        libraryTable.getLibraryByName(name)?.let {
+            if (it.isValid(sourceRoot.url, OrderRootType.SOURCES)) {
+                return@registerLibrary
+            }
+        }
+
+        var tableModel = libraryTable.modifiableModel
+        val existing = tableModel.libraries.filter { it.name == name }
+        val module = ModuleManager.getInstance(project).modules.first()
+
+        if (existing.any()) {
+            for (library in existing) {
+                tableModel.removeLibrary(library)
+            }
+            ApplicationManager.getApplication().invokeAndWait {
+                ApplicationManager.getApplication().runWriteAction(Runnable {
+                    tableModel.commit()
+                })
+            }
+            tableModel = libraryTable.modifiableModel
+        }
+
+        val library = tableModel.createLibrary(name, GdLibraryKind)
+        val libraryModel = library.modifiableModel
+        libraryModel.addRoot(sourceRoot, OrderRootType.SOURCES)
+
+        ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().runWriteAction(Runnable {
+                libraryModel.commit()
+                tableModel.commit()
+            })
+            ModuleRootModificationUtil.addDependency(module, library)
+        }
+    }
+
     private fun extractSdkIfNeededInternal(version: String, bundledSdkPath: Path): Path {
         var name = getPluginByClass(GdLibraryManager::class.java)?.name
         if (name == null) {
