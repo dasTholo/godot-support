@@ -110,10 +110,11 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
         fun mapRustType(rustType: String, className: String): String {
             RUST_TO_GDSCRIPT[rustType]?.let { return it }
 
-            val gdMatch = Regex("""Gd<(\w+)>""").find(rustType)
-            if (gdMatch != null) {
-                val inner = gdMatch.groupValues[1]
-                return if (inner == "Self") className else inner
+            // Compound types first — must precede Gd<T> to avoid inner match
+            val arrayGdMatch = Regex("""Array<Gd<(\w+)>>""").find(rustType)
+            if (arrayGdMatch != null) {
+                val inner = arrayGdMatch.groupValues[1]
+                return "Array[${if (inner == "Self") className else inner}]"
             }
 
             val optionGdMatch = Regex("""Option<Gd<(\w+)>>""").find(rustType)
@@ -122,10 +123,11 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
                 return if (inner == "Self") className else inner
             }
 
-            val arrayGdMatch = Regex("""Array<Gd<(\w+)>>""").find(rustType)
-            if (arrayGdMatch != null) {
-                val inner = arrayGdMatch.groupValues[1]
-                return "Array[${if (inner == "Self") className else inner}]"
+            // Simple Gd<T> last
+            val gdMatch = Regex("""Gd<(\w+)>""").find(rustType)
+            if (gdMatch != null) {
+                val inner = gdMatch.groupValues[1]
+                return if (inner == "Self") className else inner
             }
 
             if (rustType.startsWith("Array<")) return "Array"
