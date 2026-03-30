@@ -42,16 +42,13 @@ class GdExtensionStubService(private val project: Project) {
             return
         }
 
-        thisLogger().info("Found ${extensionTypes.size} potential GDExtension types, collecting details...")
+        thisLogger().info("Found ${extensionTypes.size} potential GDExtension types, generating stubs...")
 
-        // Step 3: Collect details for each extension type
-        val typeInfos = extensionTypes.mapNotNull { typeName ->
-            try {
-                collector.collectTypeDetails(typeName)
-            } catch (e: Exception) {
-                thisLogger().warn("Failed to collect details for $typeName: ${e.message}")
-                null
-            }
+        // Step 3: Create basic stubs for each extension type
+        // We generate minimal stubs with class_name so the indexer can resolve them.
+        // Full method details would require per-type LSP queries which is too slow.
+        val typeInfos = extensionTypes.map { typeName ->
+            GdExtTypeInfo(typeName, "RefCounted", emptyList(), emptyList(), emptyList())
         }
 
         // Step 4: Write stub files
@@ -70,8 +67,25 @@ class GdExtensionStubService(private val project: Project) {
     }
 
     private fun getKnownSdkTypes(): Set<String> {
-        val builtins = setOf("int", "String", "float", "bool", "Array", "Dictionary",
-            "void", "Variant", "Callable", "StringName", "NodePath")
+        val builtins = mutableSetOf("int", "String", "float", "bool", "Array", "Dictionary",
+            "void", "Variant", "Callable", "StringName", "NodePath", "Signal",
+            "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", "Vector4i",
+            "Color", "Rect2", "Rect2i", "Transform2D", "Transform3D",
+            "Basis", "Quaternion", "AABB", "Plane", "Projection",
+            "RID", "PackedByteArray", "PackedInt32Array", "PackedInt64Array",
+            "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
+            "PackedVector2Array", "PackedVector3Array", "PackedColorArray",
+            "PackedVector4Array")
+
+        // Collect class_name from SDK stub files via the GdClassNamingIndex
+        try {
+            val sdkTypes = gdscript.index.impl.GdClassNamingIndex.INSTANCE.getAllKeys(project)
+            builtins.addAll(sdkTypes)
+            thisLogger().info("Found ${sdkTypes.size} types from SDK index")
+        } catch (e: Exception) {
+            thisLogger().warn("Could not read SDK index: ${e.message}")
+        }
+
         return builtins
     }
 
