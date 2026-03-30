@@ -86,8 +86,9 @@ class GodotLspServerSupportProvider : LspServerSupportProvider {
                 override fun getHighlightSeverity(
                     diagnostic: org.eclipse.lsp4j.Diagnostic
                 ): com.intellij.lang.annotation.HighlightSeverity? {
-                    // Filter out UNUSED_PARAMETER noise (RIDER-117554)
+                    // Filter out noisy diagnostics
                     if (diagnostic.message.startsWith("(UNUSED_PARAMETER)")) return null
+                    if (diagnostic.message.startsWith("Class") && diagnostic.message.contains("defined in global scope")) return null
                     return super.getHighlightSeverity(diagnostic)
                 }
             }
