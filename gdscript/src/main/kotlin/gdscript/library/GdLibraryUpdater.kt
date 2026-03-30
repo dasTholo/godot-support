@@ -20,6 +20,16 @@ class GdLibraryUpdater(private val project: Project) {
 
     private val VERSION_REGEX = "config/features=PackedStringArray\\(.*\"(\\d\\.\\d)\".*\\)".toRegex()
 
+    private fun findProjectGodot(basePath: Path, maxDepth: Int = 3): Path? {
+        val direct = basePath.resolve("project.godot")
+        if (direct.exists()) return direct
+        if (maxDepth <= 0) return null
+        basePath.toFile().listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }?.forEach { sub ->
+            findProjectGodot(sub.toPath(), maxDepth - 1)?.let { return it }
+        }
+        return null
+    }
+
     fun scheduleSkdCheck(projectBasePath: Path) {
         GdScriptProjectLifetimeService.getInstance(project).scope.launch {
             withBackgroundProgress(project, GdScriptBundle.message("progress.title.check.gdsdk.for.project")) {
@@ -29,8 +39,7 @@ class GdLibraryUpdater(private val project: Project) {
     }
 
     private fun checkSdk(projectBasePath: Path) {
-        val projectFile = projectBasePath.resolve("project.godot")
-        if (!projectFile.exists()) return
+        val projectFile = findProjectGodot(projectBasePath) ?: return
         val content = projectFile.readText(Charset.defaultCharset())
 
         // todo: use com.intellij.openapi.util.Version instead of string
