@@ -33,9 +33,11 @@ class GodotLspServerSupportProvider : LspServerSupportProvider {
         if (!GodotUtil.isGdFile(file)) return
 
         val basePath = project.basePath ?: return
-        if (!GodotUtil.hasGodotProjectFile(basePath)) return
+        val godotDir = GodotUtil.findGodotProjectDir(file, basePath)
+            ?: if (GodotUtil.hasGodotProjectFile(basePath)) java.io.File(basePath) else null
+        if (godotDir == null) return
 
-        thisLogger().info("Godot project detected, starting LSP for ${file.name}")
+        thisLogger().info("Godot project detected at ${godotDir.path}, starting LSP for ${file.name}")
         serverStarter.ensureServerStarted(GodotLspServerDescriptor(project))
     }
 
