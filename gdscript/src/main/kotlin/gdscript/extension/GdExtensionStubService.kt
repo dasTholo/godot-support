@@ -90,6 +90,32 @@ class GdExtensionStubService(private val project: Project) {
             thisLogger().warn("Could not read SDK files: ${e.message}")
         }
 
+        // Collect class_name declarations from project .gd files (to exclude user-defined types)
+        try {
+            val godotDir = findGodotProjectDir(java.io.File(project.basePath ?: ""))
+            if (godotDir != null) {
+                val projectTypes = mutableSetOf<String>()
+                godotDir.walkTopDown()
+                    .filter { it.extension == "gd" && !it.path.contains("_gdext_probe") }
+                    .forEach { file ->
+                        file.useLines { lines ->
+                            for (line in lines) {
+                                val match = Regex("^class_name\\s+(\\w+)").find(line.trim())
+                                if (match != null) {
+                                    projectTypes.add(match.groupValues[1])
+                                }
+                                // class_name is always near the top, stop early
+                                if (line.startsWith("func ") || line.startsWith("var ")) break
+                            }
+                        }
+                    }
+                builtins.addAll(projectTypes)
+                thisLogger().info("Found ${projectTypes.size} project types to exclude")
+            }
+        } catch (e: Exception) {
+            thisLogger().warn("Could not scan project files: ${e.message}")
+        }
+
         return builtins
     }
 
