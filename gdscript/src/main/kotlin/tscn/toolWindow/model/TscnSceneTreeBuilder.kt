@@ -11,19 +11,20 @@ import com.intellij.ui.ScrollPaneFactory
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.concurrency.AppExecutorUtil
-import java.util.concurrent.Callable
 import com.jetbrains.rider.godot.community.gdscript.GdFileType
 import gdscript.index.impl.GdFileResIndex
 import gdscript.psi.utils.GdClassUtil
 import gdscript.utils.VirtualFileUtil.getPsiFile
-import tscn.TscnFileType
+import com.jetbrains.rider.godot.community.tscn.TscnFileType
+import org.jetbrains.annotations.NonNls
 import tscn.psi.TscnFile
 import tscn.psi.TscnNodeHeader
 import tscn.psi.search.TscnResourceSearcher
 import tscn.toolWindow.TscnSceneCellRenderer
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.awt.datatransfer.StringSelection
+import java.util.concurrent.Callable
 import javax.swing.JComponent
 import javax.swing.TransferHandler
 
@@ -46,7 +47,9 @@ class TscnSceneTreeBuilder {
             trees.first().second
         } else {
             val tabs = JBTabbedPane()
-            trees.forEach { tabs.addTab(it.first, it.second) }
+            trees.forEach {
+                @NonNls val treeText = it.first
+                tabs.addTab(treeText, it.second) }
             tabs
         }
     }
@@ -54,11 +57,11 @@ class TscnSceneTreeBuilder {
     private fun collectSceneFiles(file: VirtualFile, project: Project): List<PsiFile> {
         return when (file.fileType) {
             is TscnFileType -> arrayOf(file.getPsiFile(project)).filterNotNull()
-            is GdFileType -> TscnResourceSearcher(project).listReference(file).mapNotNull { it.file }
+            is GdFileType -> TscnResourceSearcher(project).listReference(file).mapNotNull { it.file }.distinct()
             else -> {
                 // can't reference CSharpFileType here
                 if (file.extension.equals("cs", ignoreCase = true)) {
-                    TscnResourceSearcher(project).listReference(file).mapNotNull { it.file }
+                    TscnResourceSearcher(project).listReference(file).mapNotNull { it.file }.distinct()
                 } else emptyList()
             }
         }

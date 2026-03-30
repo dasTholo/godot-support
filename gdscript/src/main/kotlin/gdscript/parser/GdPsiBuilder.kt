@@ -4,6 +4,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilder.Marker
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.tree.IElementType
+import gdscript.GdScriptBundle
 import gdscript.parser.expr.GdLiteralExParser
 import gdscript.psi.GdTypes
 import java.util.Locale
@@ -32,8 +33,11 @@ class GdPsiBuilder {
 
     val isArgs get() = state.isArgs
     val isError get() = state.isError
-    var errorAt: Int? get() = state.errorAt ?: 0
-        set(value) { state.errorAt = value }
+    var errorAt: Int?
+        get() = state.errorAt ?: 0
+        set(value) {
+            state.errorAt = value
+        }
 
     /** Lexer **/
 
@@ -101,7 +105,9 @@ class GdPsiBuilder {
         }
 
         val m = mark()
+        // Always consume semicolon if present
         consumeToken(GdTypes.SEMICON, true)
+        // Always consume NEW_LINE if present; at EOF it's still a real token from the lexer
         consumeToken(GdTypes.NEW_LINE, true)
         m.done(GdTypes.END_STMT)
 
@@ -189,7 +195,7 @@ class GdPsiBuilder {
                 advance()
             }
             errorAt = positionAt
-            m.error("${expected.removePrefix("GdTokenType.")} expected")
+            m.error(GdScriptBundle.message("parsing.error.expected", expected.removePrefix("GdTokenType.")))
         }
     }
 
@@ -219,9 +225,10 @@ class GdPsiBuilder {
     }
 
 
-    fun recursionGuard(level: Int, funcName: String?): Boolean {
+    fun recursionGuard(level: Int, funcName: String): Boolean {
         if (level > MAX_RECURSION_LEVEL) {
-            b.mark().error("Maximum recursion level ($MAX_RECURSION_LEVEL) reached $funcName")
+
+            b.mark().error(GdScriptBundle.message("parsing.error.maximum.recursion.level.reached", MAX_RECURSION_LEVEL, funcName))
             return false
         }
 

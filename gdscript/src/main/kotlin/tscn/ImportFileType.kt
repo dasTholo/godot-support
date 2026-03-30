@@ -1,17 +1,20 @@
 package tscn
 
+import GdScriptPluginIcons
 import com.intellij.openapi.fileTypes.LanguageFileType
+import com.jetbrains.rider.godot.community.tscn.TscnLanguage
+import gdscript.GdScriptBundle
 import javax.swing.Icon
 
 object ImportFileType : LanguageFileType(TscnLanguage) {
 
     override fun getName(): String = "Import file"
 
-    override fun getDescription(): String = "Godot's resource tracker import file"
+    override fun getDescription(): String = GdScriptBundle.message("filetype.godot.import.description")
 
     override fun getDefaultExtension(): String = "import"
 
     override fun getIcon(): Icon = GdScriptPluginIcons.Icons.GodotFile
 
-    override fun getDisplayName(): String = "Godot import file"
+    override fun getDisplayName(): String = GdScriptBundle.message("filetype.godot.import.display.name")
 }

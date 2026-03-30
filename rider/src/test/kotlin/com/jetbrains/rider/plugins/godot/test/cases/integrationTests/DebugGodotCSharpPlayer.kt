@@ -26,11 +26,11 @@ import com.jetbrains.rider.test.scriptingApi.stepOver
 import com.jetbrains.rider.test.scriptingApi.toggleBreakpoint
 import com.jetbrains.rider.test.scriptingApi.waitForPause
 import com.jetbrains.rider.test.tooling.testTools
+import org.testng.ITestResult
 import org.testng.annotations.AfterClass
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
-import kotlin.collections.plus
 
 @Subsystem(SubsystemConstants.GODOT)
 @Feature("Debug C# godot player")
@@ -45,8 +45,8 @@ class DebugGodotCSharpPlayer : PerTestSolutionTestBase() {
         get() = super.traceScenarios + LogTraceScenarios.Debugger
 
     @BeforeMethod(dependsOnMethods = ["startGodot"])
-    override fun setUpTestCaseSolution() {
-        super.setUpTestCaseSolution()
+    override fun setUpTestCaseSolution(testResult: ITestResult) {
+        super.setUpTestCaseSolution(testResult)
     }
 
     @BeforeClass(alwaysRun = true)
@@ -62,16 +62,16 @@ class DebugGodotCSharpPlayer : PerTestSolutionTestBase() {
     @BeforeMethod(alwaysRun = true)
     fun startGodot() {
         godotProcess = startGodotWithProject(
-          projectName = testMethod.solution!!.name,
-          testWorkDirectory = testWorkDirectory,
-          solutionSourceRootDirectory = solutionSourceRootDirectory,
-          logPath = testMethod.logDirectory,
-          dotnetSdk = testTools().build.dotNetSdk[testMethod.settings.sdk].root.absolutePath,
+            projectName = testMethod.solution!!.name,
+            testWorkDirectory = testWorkDirectory,
+            solutionSourceRootDirectory = solutionSourceRootDirectory,
+            logPath = testMethod.logDirectory,
+            dotnetSdk = testTools(executionTarget).build.dotNetSdk[testMethod.settings.sdk].root.absolutePath,
         )
     }
 
-    @Test(description = "Debug C# godot player")
-    @ChecklistItems(["Debug/Debug C# godot player"])
+    @Test(description = "Debug C# Godot player")
+    @ChecklistItems(["Debug/Debug C# Godot player"])
     fun testDebug() {
       attachDebuggerToGodotEditor(project,
                                   {
@@ -85,7 +85,7 @@ class DebugGodotCSharpPlayer : PerTestSolutionTestBase() {
     }
 
     @Test(description = "Check simple stepping")
-    @ChecklistItems(["Debug/Stepping while debug C# godot player"])
+    @ChecklistItems(["Debug/Stepping while debug C# Godot player"])
     fun checkSimpleStepping() {
       attachDebuggerToGodotEditor(project,
                                   {
@@ -103,7 +103,7 @@ class DebugGodotCSharpPlayer : PerTestSolutionTestBase() {
     }
 
     @Test(description = "Check simple evaluation")
-    @ChecklistItems(["Debug/Evaluation while debug C# godot player"])
+    @ChecklistItems(["Debug/Evaluation while debugging C# Godot player"])
     fun checkSimpleEvaluation() {
       attachDebuggerToGodotEditor(project,
                                   {

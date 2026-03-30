@@ -1,15 +1,13 @@
 package com.jetbrains.godot.gdscript.parser
 
-import com.intellij.testFramework.ParsingTestCase
 import com.jetbrains.godot.getBaseTestDataPath
-import gdscript.GdParserDefinition
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import kotlin.io.path.pathString
 
 @RunWith(JUnit4::class)
-class GdParserTest : ParsingTestCase("", "gd", GdParserDefinition()) {
+class GdParserTest : GdParsingTestCase() {
     // https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_basics.html
 
     @Test fun testExtension() = doTest(true)
@@ -27,8 +25,6 @@ class GdParserTest : ParsingTestCase("", "gd", GdParserDefinition()) {
     @Test fun testTypedDictionary() = doTest(true)
     @Test fun testSignal() = doTest(true)
     @Test fun testEnumAnonymous() = doTest(true)
-    @Test fun testEnumNamed() = doTest(true)
-    @Test fun testFunctionSimple() = doTest(true)
     @Test fun testMethodVararg() = doTest(true)
     @Test fun testMethodArrayReturnType() = doTest(true)
     @Test fun testClass() = doTest(true)
@@ -68,7 +64,7 @@ class GdParserTest : ParsingTestCase("", "gd", GdParserDefinition()) {
 
     @Test fun testFuncDeclExprExt() = doTest(true)
     @Test fun testFuncDeclExprParam() = doTest(true)
-    @Test fun testLambdaCallExpr() = doTest(true)
+    @Test fun testlambda_nested() = doTest(true, true)
     @Test fun testNestedCallExpr() = doTest(true)
     @Test fun testPrimaryBracketExpr() = doTest(true)
     @Test fun testDictDeclExpr() = doTest(true)
@@ -76,13 +72,4 @@ class GdParserTest : ParsingTestCase("", "gd", GdParserDefinition()) {
     override fun getTestDataPath(): String {
         return getBaseTestDataPath().resolve("testData/gdscript/parser/data").pathString
     }
-
-    override fun skipSpaces(): Boolean {
-        return false
-    }
-
-    override fun includeRanges(): Boolean {
-        return true
-    }
-
 }

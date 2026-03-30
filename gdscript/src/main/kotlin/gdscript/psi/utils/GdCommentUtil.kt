@@ -1,5 +1,6 @@
 package gdscript.psi.utils
 
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -15,19 +16,22 @@ import gdscript.psi.GdClassNaming
 import gdscript.psi.GdTypes
 import gdscript.psi.types.GdDocumented
 import gdscript.utils.PsiElementUtil.prevCommentBlock
+import org.jetbrains.annotations.NonNls
 
 object GdCommentUtil {
 
-    val TUTORIAL_REGEX = "@tutorial(\\(.+\\))?:\\s+(.+)".toRegex()
+    val TUTORIAL_REGEX: Regex = "@tutorial(?:\\((.+)\\))?:\\s+(.+)".toRegex()
 
-    val DESCRIPTION = "desc"
-    val PARAMETER = "param"
-    val BRIEF_DESCRIPTION = "brief"
-    val ENUM = "enum"
-    val RETURN = "return"
-    val TUTORIAL = "tutorial"
+    @NonNls const val DESCRIPTION: String = "desc"
+    @NonNls const val PARAMETER: String = "param"
+    @NonNls const val BRIEF_DESCRIPTION: String = "brief"
+    @NonNls const val ENUM: String = "enum"
+    @NonNls const val RETURN: String = "return"
+    @NonNls const val TUTORIAL: String = "tutorial"
+    @NonNls const val DEPRECATED: String = "deprecated"
+    @NonNls const val EXPERIMENTAL: String = "experimental"
 
-    val BREAKS_AT = arrayOf(
+    val BREAKS_AT: Array<String> = arrayOf(
         GdTraitLineMarkerContributor.PREFIX.trimStart('#'),
         GdTraitLineMarkerContributor.SUFFIX.trimStart('#'),
     )
@@ -82,6 +86,21 @@ object GdCommentUtil {
         return model.isExperimental
     }
 
+    private fun startsWithTag(line: String): Boolean {
+        if (!line.startsWith("@"))
+            return false
+        val text = line.removePrefix("@")
+        return (text.startsWith(BRIEF_DESCRIPTION.plus(":"))
+            || text.startsWith(DESCRIPTION.plus(":"))
+            || text.startsWith(PARAMETER.plus(":"))
+            || text.startsWith(TUTORIAL)
+            || text.startsWith(ENUM.plus(":"))
+            || text.startsWith(RETURN.plus(":"))
+            || text.startsWith(DEPRECATED)
+            || text.startsWith(EXPERIMENTAL)
+            )
+    }
+
     fun collectComments(element: PsiElement?): GdCommentModel {
         val comments = mutableListOf<String>()
         val model = GdCommentModel()
@@ -110,45 +129,80 @@ object GdCommentUtil {
                 }
                 child = child.nextSibling
             }
-            comments.reverse()
         } else {
             var previous: PsiElement? = element
+            var isComment = false
             while (true) {
                 previous = previous?.prevCommentBlock()
                 if (previous != null) {
                     val txt = previous.text
-                    if (!txt.startsWith("##")) break
-                    comments.add(txt.removePrefix("##").trim())
+                    if (txt.startsWith("##")) {
+                        comments.add(txt.removePrefix("##").trim())
+                        isComment = true
+                    } else break
                 } else break
             }
+            if (isComment) comments.reverse()
         }
 
-        var brief = false
+        var isBrief = true
+        val brief = mutableListOf<String>()
+        val description = mutableListOf<String>()
         comments.forEach {
-            if (it.startsWith("@description")) {
-                model.isDeprecated = true
-            } else if (it.startsWith("@tutorial")) {
-                val groups = TUTORIAL_REGEX.find(it)?.groups
-                val tutorial = GdTutorial()
-                if (groups?.get(2) != null) {
-                    tutorial.url = groups[2]!!.value
-                    tutorial.name = groups[1]?.value ?: groups[2]!!.value
-                    model.tutorials.add(0, tutorial)
+            if (startsWithTag(it)) {
+                val text = it.removePrefix("@")
+                if (text.startsWith(BRIEF_DESCRIPTION)) {
+                    val content = text.removePrefix(BRIEF_DESCRIPTION.plus(":")).trim()
+                    if (content.isNotEmpty()) {
+                        brief.add(content)
+                        description.add(content)
+                    }
+                } else if (text.startsWith(DESCRIPTION)) {
+                    val content = text.removePrefix(DESCRIPTION.plus(":")).trim()
+                    if (content.isNotEmpty()) {
+                        description.add(content)
+                    }
+                } else if (text.startsWith(PARAMETER)) {
+                    description.add(it)
+                } else if (text.startsWith(ENUM)) {
+                    description.add(it)
+                } else if (text.startsWith(RETURN)) {
+                    description.add(it)
+                } else if (text.startsWith(DEPRECATED)) {
+                    model.isDeprecated = true
+                    description.add(it)
+                } else if (text.startsWith(EXPERIMENTAL)) {
+                    model.isExperimental = true
+                    description.add(it)
+                } else if (text.startsWith(TUTORIAL)) {
+                    val groups = TUTORIAL_REGEX.find(it)?.groups
+                    val tutorial = GdTutorial()
+                    if (groups?.get(2) != null) {
+                        tutorial.url = groups[2]!!.value
+                        tutorial.name = groups[1]?.value ?: groups[2]!!.value
+                        model.tutorials.add(tutorial)
+                    }
+                    description.add(it)
                 }
-            } else if (it.trim() == "" && model.description != "") {
-                brief = true
+
+                isBrief = false
+            } else if (isBrief && it.isNotEmpty()) {
+                brief.add(it)
+                description.add(it)
+            } else if(isBrief && it.isEmpty()) {
+                if (brief.isNotEmpty()) isBrief = false
+                if (description.isNotEmpty()) description.add(it)
             } else {
-                if (brief) {
-                    model.brief = "${it}\n${model.brief}".trim('\n')
-                } else {
-                    model.description = "${it}\n${model.description}".trim('\n')
-                }
+                description.add(it)
             }
         }
 
+        model.brief = brief.joinToString("\n")
+        model.description = description.joinToString("\n")
         return model
     }
 
+    @NlsSafe
     fun collectAllDescriptions(element: PsiElement?): Map<String, List<String>> {
         val descriptions = mutableMapOf<String, MutableList<String>>()
         descriptions[DESCRIPTION] = mutableListOf()
@@ -197,7 +251,8 @@ object GdCommentUtil {
 
     fun Map<String, List<String>>.tutorialBlock(): HtmlChunk {
         return GdDocUtil.listTable("tutorials", this[TUTORIAL]!!.map {
-            HtmlChunk.link(it.substringAfter("]").trim(), it.substringBefore("]").removePrefix("[").trim())
+            @NonNls val text = it.substringBefore("]").removePrefix("[").trim()
+            HtmlChunk.link(it.substringAfter("]").trim(), text)
         })
     }
 
@@ -207,13 +262,15 @@ object GdCommentUtil {
 
     fun Map<String, List<String>>.parameterBlock(): HtmlChunk {
         return GdDocUtil.listTable("params", this[PARAMETER]!!.map {
-            HtmlChunk.raw(it.replaceFirst(" ", " - "))
+            @NonNls val text = it.replaceFirst(" ", " - ")
+            HtmlChunk.raw(text)
         })
     }
 
     fun Map<String, List<String>>.returnBlock(): HtmlChunk {
         return GdDocUtil.listTable("return", this[RETURN]!!.map {
-            HtmlChunk.raw(it)
+            @NonNls val text = it.replaceFirst(" ", " - ")
+            HtmlChunk.raw(text)
         })
     }
 

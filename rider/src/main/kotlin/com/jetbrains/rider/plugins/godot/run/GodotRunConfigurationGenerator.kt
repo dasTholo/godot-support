@@ -17,10 +17,6 @@ import com.jetbrains.rider.model.godot.frontendBackend.GodotFrontendBackendModel
 import com.jetbrains.rider.plugins.godot.GodotProjectDiscoverer
 import com.jetbrains.rider.plugins.godot.run.configurations.GodotDebugRunConfiguration
 import com.jetbrains.rider.plugins.godot.run.configurations.GodotDebugRunConfigurationType
-import com.jetbrains.rider.plugins.godot.run.configurations.gdscript.GdScriptConfigurationType
-import com.jetbrains.rider.plugins.godot.run.configurations.gdscript.GdScriptRunConfiguration
-import com.jetbrains.rider.plugins.godot.run.configurations.gdscript.GdScriptRunConfigurationHelper
-import com.jetbrains.rider.plugins.godot.run.configurations.gdscript.GdScriptRunFactory
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.solutionDirectory
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfiguration
@@ -30,6 +26,7 @@ import com.jetbrains.rider.run.configurations.exe.ExeConfigurationType
 import com.jetbrains.rider.run.configurations.remote.DotNetRemoteConfiguration
 import com.jetbrains.rider.run.configurations.remote.MonoRemoteConfigType
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntimeType
+import org.jetbrains.annotations.NonNls
 import java.nio.file.Paths
 import kotlin.io.path.pathString
 import kotlin.io.path.relativeToOrSelf
@@ -38,13 +35,17 @@ import kotlin.io.path.relativeToOrSelf
 class GodotRunConfigurationGenerator : LifetimedService() {
 
     companion object {
-        const val ATTACH_CONFIGURATION_NAME = "Attach to Player"
+        @NonNls
+        const val ATTACH_CONFIGURATION_NAME: String = "Attach to Player"
 
-        const val PLAYER_CONFIGURATION_NAME = "Player"
-        const val PLAYER_GDSCRIPT_CONFIGURATION_NAME = "Player GDScript"
-        const val PLAYER_GDSCRIPT_ATTACH_CONFIGURATION_NAME = "Player GDScript (Attach)"
-        const val EDITOR_CONFIGURATION_NAME = "Editor"
-        const val CHICKENSOFT_TEST_CONFIGURATION_NAME = "Debug test"
+        @NonNls
+        const val PLAYER_CONFIGURATION_NAME: String = "Player"
+
+        @NonNls
+        const val EDITOR_CONFIGURATION_NAME: String = "Editor"
+
+        @NonNls
+        const val CHICKENSOFT_TEST_CONFIGURATION_NAME: String = "Debug test"
     }
 
     class ProtocolListener : SolutionExtListener<GodotFrontendBackendModel> {
@@ -93,11 +94,8 @@ class GodotRunConfigurationGenerator : LifetimedService() {
                     }
 
                     GodotProjectDiscoverer.getInstance(project).godotPath.adviseNotNull(lt) { path ->
-                        createOrUpdateGdScriptRunConfiguration(PLAYER_GDSCRIPT_CONFIGURATION_NAME, runManager)
-                        createOrUpdateGdScriptRunConfiguration(PLAYER_GDSCRIPT_ATTACH_CONFIGURATION_NAME, runManager, true)
                         if (descriptor.isPureGdScriptProject){
                             createOrUpdateNativeExecutableRunConfiguration(EDITOR_CONFIGURATION_NAME, "--path \"${relPath}\" --editor", runManager, path, project)
-                            selectConfigurationIfNeeded(runManager)
                         }
                         selectConfigurationIfNeeded(runManager)
                     }
@@ -111,12 +109,6 @@ class GodotRunConfigurationGenerator : LifetimedService() {
                 val runConfiguration = runManager.findConfigurationByName(PLAYER_CONFIGURATION_NAME)
                 if (runConfiguration != null) {
                     runManager.selectedConfiguration = runConfiguration
-                }
-                else {
-                    val runConfiguration2 = runManager.findConfigurationByName(PLAYER_GDSCRIPT_CONFIGURATION_NAME)
-                    if (runConfiguration2 != null) {
-                        runManager.selectedConfiguration = runConfiguration2
-                    }
                 }
             }
         }
@@ -171,34 +163,6 @@ class GodotRunConfigurationGenerator : LifetimedService() {
                 config.parameters.exePath = godotPath
                 config.parameters.programParameters = programParameters
                 config.parameters.workingDirectory = project.solutionDirectory.absolutePath
-                runConfiguration.storeInLocalWorkspace()
-                runManager.addConfiguration(runConfiguration)
-            }
-        }
-
-        private fun createOrUpdateGdScriptRunConfiguration(
-            configurationName: String,
-            runManager: RunManager,
-            attach: Boolean = false        ) {
-            // todo: maybe after some time, we can remove this code, it is only useful to remove previously generated configs
-            val toRemove = runManager.allSettings.filter {
-                it.type is ExeConfigurationType && (it.name == configurationName)
-            }
-            for (value in toRemove) {
-                runManager.removeConfiguration(value)
-            }
-
-            val configs = runManager.allSettings.filter { it.type is GdScriptConfigurationType && it.name == configurationName }
-            if (configs.any()) {
-                configs.forEach{
-                    // todo: update DAP port, if I find a way to read it from project settings
-                }
-            } else {
-                val configurationType = ConfigurationTypeUtil.findConfigurationType(GdScriptConfigurationType::class.java)
-                val runConfiguration = runManager.createConfiguration(configurationName, configurationType.factory)
-                if (attach) {
-                    (runConfiguration.configuration as GdScriptRunConfiguration).json = GdScriptRunFactory.DEFAULT_FULL_JSON.replace("\"request\" : \"Launch\"", "\"request\" : \"Attach\"")
-                }
                 runConfiguration.storeInLocalWorkspace()
                 runManager.addConfiguration(runConfiguration)
             }

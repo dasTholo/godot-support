@@ -1,6 +1,7 @@
 package gdscript.codeInsight.documentation
 
 import com.intellij.lang.documentation.DocumentationMarkup
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -12,21 +13,50 @@ import gdscript.completion.utils.GdEnumCompletionUtil.preview
 import gdscript.completion.utils.GdMethodCompletionUtil.methodHeader
 import gdscript.completion.utils.GdMethodCompletionUtil.shortMethodHeader
 import gdscript.index.impl.utils.GdFileResInputFilter
-import gdscript.psi.*
+import gdscript.psi.GdBindingPattern
+import gdscript.psi.GdClassNameNmi
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdEnumDeclNmi
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdEnumValue
+import gdscript.psi.GdEnumValueNmi
+import gdscript.psi.GdForSt
+import gdscript.psi.GdFuncDeclEx
+import gdscript.psi.GdFuncDeclIdNmi
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdMethodIdNmi
+import gdscript.psi.GdParam
+import gdscript.psi.GdSetDecl
+import gdscript.psi.GdSignalDeclTl
+import gdscript.psi.GdSignalIdNmi
+import gdscript.psi.GdVarDeclSt
+import gdscript.psi.GdVarNmi
 import gdscript.psi.types.GdDocumented
-import gdscript.psi.utils.*
+import gdscript.psi.utils.GdAnnotationUtil
+import gdscript.psi.utils.GdClassMemberUtil
 import gdscript.psi.utils.GdClassMemberUtil.constants
 import gdscript.psi.utils.GdClassMemberUtil.enums
 import gdscript.psi.utils.GdClassMemberUtil.methods
 import gdscript.psi.utils.GdClassMemberUtil.signals
 import gdscript.psi.utils.GdClassMemberUtil.variables
+import gdscript.psi.utils.GdClassUtil
+import gdscript.psi.utils.GdCommentUtil
+import gdscript.psi.utils.GdCommonUtil
+import gdscript.psi.utils.GdInheritanceUtil
 import gdscript.utils.VirtualFileUtil.localParentPath
 import gdscript.utils.VirtualFileUtil.resourcePath
+import org.jetbrains.annotations.Nls
+import org.jetbrains.annotations.NonNls
 import project.ProjectFileType
-import tscn.TscnFileType
+import com.jetbrains.rider.godot.community.tscn.TscnFileType
 
 object GdDocFactory {
 
+    @NlsSafe private const val ENUM = "enum "
+
+    @NlsSafe
     fun create(element: Any?, fullDoc: Boolean = false): String? {
         return when (element) {
             is GdVarNmi -> variable(element, fullDoc)
@@ -137,7 +167,8 @@ object GdDocFactory {
                 builder.addBodyBlock(GdDocUtil.listTable(
                     "tutorials",
                     declaration.tutorials().map {
-                      HtmlChunk.link(it.url, it.name.removeSurrounding("(", ")"))
+                        @NonNls val text = it.name.removeSurrounding("(", ")")
+                        HtmlChunk.link(it.url, text)
                     },
                 ))
                 appendProperties(builder, GdClassUtil.getOwningClassElement(element))
@@ -276,12 +307,13 @@ object GdDocFactory {
             var isNamed = true
             if (name.isBlank()) {
                 isNamed = false
-                name = GdCommentUtil.collectAllDescriptions(it)[GdCommentUtil.ENUM]?.firstOrNull() ?: "" // TODO
+                @NlsSafe val text = GdCommentUtil.collectAllDescriptions(it)[GdCommentUtil.ENUM]?.firstOrNull() ?: ""
+                name = text // TODO
             }
 
             Pair(
                 HtmlChunk.fragment(
-                    HtmlChunk.text("enum "),
+                    HtmlChunk.text(ENUM),
                     if (isNamed) GdDocUtil.elementLink(it.name) else HtmlChunk.text(name),
                     GdDocUtil.appendDescription(it)
                 ),

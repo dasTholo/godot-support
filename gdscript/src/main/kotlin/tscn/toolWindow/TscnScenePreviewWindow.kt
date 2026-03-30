@@ -23,7 +23,7 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.ui.TimerUtil
 import com.intellij.util.ui.UIUtil
 import common.util.GdScriptProjectLifetimeService
-import java.util.concurrent.Callable
+import gdscript.GdScriptBundle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,8 +33,11 @@ import kotlinx.coroutines.launch
 import tscn.toolWindow.model.TscnSceneTreeBuilder
 import java.awt.KeyboardFocusManager
 import java.awt.event.HierarchyEvent
+import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
 
 
 private enum class RebuildDelay {

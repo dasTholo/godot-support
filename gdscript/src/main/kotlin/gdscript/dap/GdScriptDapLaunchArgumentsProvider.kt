@@ -1,0 +1,21 @@
+package gdscript.dap
+
+import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.project.Project
+import com.intellij.platform.dap.DapLaunchArgumentsProvider
+import com.intellij.platform.dap.LaunchRequestArguments
+
+class GdScriptDapLaunchArgumentsProvider : DapLaunchArgumentsProvider {
+    override fun isApplicable(executorId: String, profile: RunProfile): Boolean = profile is GdScriptRunConfiguration
+
+    override fun getLaunchArguments(project: Project, profile: RunProfile): LaunchRequestArguments {
+        profile as GdScriptRunConfiguration
+        val structured = profile.structured
+        val args = GdScriptRunConfigurationHelper.parseArgumentsToMap(profile.json)
+        return LaunchRequestArguments(
+            adapterId = GdScriptDebugAdapter,
+            request = structured.request,
+            arguments = args,
+        )
+    }
+}

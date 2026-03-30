@@ -5,7 +5,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import gdscript.psi.*
+import gdscript.GdScriptBundle
+import gdscript.psi.GdAssignTyped
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdElementFactory
+import gdscript.psi.GdVarDeclSt
 
 class GdAddVariableTypeHintFix : LocalQuickFixOnPsiElement {
 
@@ -17,8 +23,8 @@ class GdAddVariableTypeHintFix : LocalQuickFixOnPsiElement {
         this.fullType = fullType
     }
 
-    override fun getFamilyName(): String = "Add variable type"
-    override fun getText(): String = "Specify variable type [$desired]"
+    override fun getFamilyName(): String = GdScriptBundle.message("inspection.fix.add.variable.type.hint.family")
+    override fun getText(): String = GdScriptBundle.message("inspection.fix.add.variable.type.hint.text", desired)
 
     override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
         if (fullType) fullType(project, startElement, endElement)

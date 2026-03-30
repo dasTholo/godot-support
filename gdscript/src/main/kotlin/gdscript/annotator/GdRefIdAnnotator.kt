@@ -10,14 +10,23 @@ import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.nextLeaf
 import gdscript.GdKeywords
+import gdscript.GdScriptBundle
 import gdscript.highlighter.GdHighlighterColors
-import gdscript.psi.*
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassNaming
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdNodePath
+import gdscript.psi.GdRefIdRef
+import gdscript.psi.GdTypes
 import gdscript.psi.utils.GdClassMemberUtil
 import gdscript.reference.GdClassMemberReference
 import gdscript.settings.GdProjectSettingsState
 import gdscript.settings.GdProjectState
 import gdscript.utils.PsiElementUtil.getCallExpr
 import gdscript.utils.PsiFileUtil.isInSdk
+import project.psi.util.ProjectAutoloadUtil
 
 /**
  * Colors references
@@ -48,9 +57,14 @@ class GdRefIdAnnotator : Annotator {
         if (reference?.isSoft == false && reference is GdClassMemberReference) {
             attribute = when (val resolved = reference.resolveDeclaration()) {
                 is GdMethodDeclTl -> {
-                    if (resolved.containingFile.name.endsWith("GlobalScope.gd")) GdHighlighterColors.GLOBAL_FUNCTION
+                    if (resolved.containingFile.name == "${GdKeywords.GLOBAL_SCOPE}.gd") GdHighlighterColors.GLOBAL_FUNCTION
                     else if (resolved.isStatic) GdHighlighterColors.STATIC_METHOD_CALL
                     else GdHighlighterColors.METHOD_CALL
+                }
+
+                is GdClassVarDeclTl -> {
+                    if (resolved.containingFile.name == "${GdKeywords.GLOBAL_SCOPE}.gd") GdHighlighterColors.GLOBAL_VARIABLE_BUILT_IN
+                    else GdHighlighterColors.MEMBER
                 }
 
                 is PsiFile, is GdClassDeclTl, is GdClassNaming -> {
@@ -59,18 +73,25 @@ class GdRefIdAnnotator : Annotator {
                         psi = psi.parent!!
                     }
 
-                    if (psi.containingFile.isInSdk()) {
+                    if (ProjectAutoloadUtil.findFromAlias(txt, element) != null) {
+                        GdHighlighterColors.GLOBAL_VARIABLE_AUTOLOAD
+                    }
+                    else if (psi.containingFile.isInSdk()) {
                         val nextLeaf = element.nextLeaf(true)
-                        if (!objectContinuation.contains(nextLeaf.elementType) && psi.childrenOfType<GdMethodDeclTl>().any { it.isConstructor }) {
+                        if (!objectContinuation.contains(nextLeaf.elementType) && psi.childrenOfType<GdMethodDeclTl>()
+                                .any { it.isConstructor }
+                        ) {
                             holder
-                                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "Builtin type $txt cannot be assigned to a variable")
+                                .newAnnotationGd(
+                                    HighlightSeverity.ERROR,
+                                    GdScriptBundle.message("annotator.builtin.type.cannot.be.assigned.to.a.variable", txt)
+                                )
                                 .range(element.textRange)
                                 .create()
                             return
                         }
                         GdHighlighterColors.ENGINE_TYPE
-                    }
-                    else GdHighlighterColors.CLASS_TYPE
+                    } else GdHighlighterColors.CLASS_TYPE
                 }
 
                 null -> run {
@@ -107,7 +128,10 @@ class GdRefIdAnnotator : Annotator {
                         return@run GdHighlighterColors.METHOD_CALL
 
                     holder
-                        .newAnnotationGd(element.project, GdProjectState.selectedLevel(state), "Reference [${element.text}] not found")
+                        .newAnnotationGd(
+                            GdProjectState.selectedLevel(state),
+                            GdScriptBundle.message("annotator.message.reference.not.found", element.text)
+                        )
                         .range(element.textRange)
                         .create()
                     return

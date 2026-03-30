@@ -7,6 +7,8 @@ import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.LibraryOrderEntry
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
@@ -15,7 +17,12 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.io.Decompressor
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.io.path.pathString
+import kotlin.io.path.readText
 
 object GdLibraryManager {
 
@@ -29,15 +36,21 @@ object GdLibraryManager {
             throw Exception("Cannot find SDK at $path")
         }
 
+        val module = ModuleManager.getInstance(project).modules.first()
+
         val libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
-        libraryTable.getLibraryByName(LIBRARY_NAME)?.let {
+        libraryTable.getLibraryByName(LIBRARY_NAME)?.let { lib->
             // I see this doesn't work on the dev build
             // different casing of letters
             // /Users/ivan.shakhov/Work/ultimate/out/dev-run/Rider
             // vs
             // /Users/ivan.shakhov/Work/ultimate/out/dev-run/rider
-            if (it.isValid(sourceRoot.url, OrderRootType.SOURCES)
-                && libraryTable.libraries.count { library -> library.name?.startsWith(LIBRARY_NAME) == true } == 1) {
+            if (lib.isValid(sourceRoot.url, OrderRootType.SOURCES)
+                && libraryTable.libraries.count { library -> library.name?.startsWith(LIBRARY_NAME) == true } == 1
+                && ModuleRootManager.getInstance(module)
+                    .orderEntries
+                    .filterIsInstance<LibraryOrderEntry>()
+                    .any { it.library == lib }) { // check that module has dependency on this library
                 return@registerSdkIfNeeded
             }
         }
@@ -45,7 +58,6 @@ object GdLibraryManager {
         var tableModel = libraryTable.modifiableModel
         val libraries = tableModel.libraries.filter { library -> library.name?.startsWith(LIBRARY_NAME) == true }
 
-        val module = ModuleManager.getInstance(project).modules.first()
         if (libraries.any()) {
             for (library in libraries) {
                 tableModel.removeLibrary(library)
@@ -126,14 +138,14 @@ object GdLibraryManager {
 
         // Check if SDK is already extracted and has a valid stamp
         val validator = SdkIntegrityValidator()
-        val extractionStampFile = extractionDir.resolve(SdkIntegrityValidator.STAMP_FILE_NAME).toFile()
-        val needsExtraction = !extractionDir.toFile().exists() ||
+        val extractionStampFile = extractionDir.resolve(SdkIntegrityValidator.STAMP_FILE_NAME)
+        val needsExtraction = !extractionDir.exists() ||
                               !extractionStampFile.exists() ||
                               extractionStampFile.readText().trim() != validator.getFilesFromFs(extractionDir).count().toString()
 
         // Extract SDK if needed
         if (needsExtraction) {
-            if (extractionDir.toFile().exists()) {
+            if (extractionDir.exists()) {
                 extractionDir.toFile().deleteRecursively()
             }
             Files.createDirectories(extractionDir)

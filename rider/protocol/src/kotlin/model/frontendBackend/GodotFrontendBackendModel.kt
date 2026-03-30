@@ -27,13 +27,8 @@ object GodotFrontendBackendModel : Ext(SolutionModel.Solution) {
     val GodotDescriptor = structdef("GodotDescriptor"){
         field("isPureGdScriptProject", bool).documentation = "True for pure GdScript project"
         field("mainProjectBasePath", string).documentation = "Path to the folder with the project.godot"
+        field("mainProjectPath", string.nullable).documentation = "Path to the main csproj"
         field("tfm", RunnableProjectsModel.rdTargetFrameworkId.nullable)
-    }
-
-    private val LanguageServerConnectionMode = enum {
-        +"Never"
-        +"ConnectRunningEditor"
-        +"StartEditorHeadless"
     }
 
     init {
@@ -51,10 +46,6 @@ object GodotFrontendBackendModel : Ext(SolutionModel.Solution) {
         // Settings stored in the backend
         field("backendSettings", aggregatedef("GodotBackendSettings") {
             property("enableDebuggerExtensions", bool)
-
-            property("lspConnectionMode", LanguageServerConnectionMode)
-            property("remoteHostPort", int)
-            property("useDynamicPort", bool)
             property("buildAutomatically", bool)
         })
 

@@ -3,14 +3,53 @@ package gdscript.psi.utils
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.nextLeaf
 import gdscript.GdKeywords
 import gdscript.index.impl.GdClassNamingIndex
 import gdscript.index.impl.GdFileResIndex
-import gdscript.psi.*
+import gdscript.psi.GdArrEx
+import gdscript.psi.GdArrayDecl
+import gdscript.psi.GdAttributeEx
+import gdscript.psi.GdBitAndEx
+import gdscript.psi.GdBitNotEx
+import gdscript.psi.GdCallEx
+import gdscript.psi.GdCastEx
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassNaming
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdComparisonEx
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdDictDecl
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdEnumValue
+import gdscript.psi.GdExpr
+import gdscript.psi.GdFactorEx
+import gdscript.psi.GdForSt
+import gdscript.psi.GdFuncDeclEx
+import gdscript.psi.GdInEx
+import gdscript.psi.GdIsEx
+import gdscript.psi.GdLiteralEx
+import gdscript.psi.GdLogicEx
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdNegateEx
+import gdscript.psi.GdNodePath
+import gdscript.psi.GdParam
+import gdscript.psi.GdPlusEx
+import gdscript.psi.GdPlusMinusEx
+import gdscript.psi.GdPlusMinusPreEx
+import gdscript.psi.GdPrimaryEx
+import gdscript.psi.GdRefIdRef
+import gdscript.psi.GdShiftEx
+import gdscript.psi.GdSignEx
+import gdscript.psi.GdSignalDeclTl
+import gdscript.psi.GdTernaryEx
+import gdscript.psi.GdTyped
+import gdscript.psi.GdTypedVal
+import gdscript.psi.GdTypes
+import gdscript.psi.GdVarDeclSt
 import gdscript.reference.GdClassMemberReference
 import gdscript.utils.GdExprUtil.left
 import gdscript.utils.GdExprUtil.right
@@ -230,8 +269,7 @@ object PsiGdExprUtil {
                     }
 
                     val named: GdRefIdRef = expr.refIdNm ?: return ""
-                    return when (val element =
-                        GdClassMemberUtil.findDeclaration(named)) {
+                    return when (val element = GdClassMemberUtil.findDeclaration(named)) {
                         is GdClassVarDeclTl -> parseLoadedType(expr, element.returnType)
                         is GdVarDeclSt -> parseLoadedType(expr, element.returnType)
                         is GdConstDeclTl -> parseLoadedType(expr, element.returnType)
@@ -302,8 +340,7 @@ object PsiGdExprUtil {
             className = "Dictionary"
         }
 
-        return GdClassNamingIndex.INSTANCE.get(className, element.project, GlobalSearchScope.allScope(element.project))
-            .firstOrNull()?.containingFile
+        return GdClassNamingIndex.INSTANCE.getGlobally(className, element.project).firstOrNull()?.containingFile
     }
 
     private fun fromTyped(typed: String): String {

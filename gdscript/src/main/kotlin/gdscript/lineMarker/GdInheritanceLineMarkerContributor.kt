@@ -1,11 +1,12 @@
 package gdscript.lineMarker
 
+import GdScriptPluginIcons
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
 import com.intellij.ide.util.PsiElementListCellRenderer
 import com.intellij.psi.PsiElement
-import gdscript.GdIcon
+import gdscript.GdScriptBundle
 import gdscript.psi.GdMethodIdNmi
 import gdscript.psi.utils.GdClassMemberUtil
 import gdscript.psi.utils.GdInheritanceUtil
@@ -35,8 +36,8 @@ class GdInheritanceLineMarkerContributor : RelatedItemLineMarkerProvider() {
             GdScriptPluginIcons.GDScriptIcons.OVERRIDE
         )
             .setTargets(superMethod)
-            .setPopupTitle("Parent Method")
-            .setTooltipText("Navigate to parent method")
+            .setPopupTitle(GdScriptBundle.message("line.marker.super.method.popup.title"))
+            .setTooltipText(GdScriptBundle.message("line.marker.super.method.popup.description"))
             .setCellRenderer {
                 object : PsiElementListCellRenderer<PsiElement>() {
                     override fun getIcon(element: PsiElement?): Icon {

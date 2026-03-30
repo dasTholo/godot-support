@@ -1,17 +1,24 @@
 package project.psi.util
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.descendantsOfType
 import com.jetbrains.rider.godot.community.gdscript.GdFileType
+import com.jetbrains.rider.godot.community.gdscript.GdLanguage
 import gdscript.index.impl.GdFileResIndex
 import gdscript.utils.VirtualFileUtil.getPsiFile
+import project.ProjectLanguage
 import project.index.impl.ProjectSectionIndex
 import project.psi.ProjectData
 import project.psi.model.GdAutoload
-import tscn.TscnFileType
+import com.jetbrains.rider.godot.community.tscn.TscnFileType
+import com.jetbrains.rider.godot.community.tscn.TscnLanguage
 import tscn.psi.TscnNodeHeader
 import tscn.psi.utils.TscnNodeUtil
 import tscn.psi.utils.TscnNodeUtil.getScriptResource
@@ -19,7 +26,23 @@ import tscn.psi.utils.TscnNodeUtil.getScriptResource
 object ProjectAutoloadUtil {
 
     fun listGlobals(project: Project): List<GdAutoload> {
-        return all(project).mapNotNull {
+        return CachedValuesManager.getManager(project).getCachedValue(project) {
+            val result = computeGlobals(project)
+            val dependencies = buildList {
+                // Track PSI modifications in project file (contains autoload section)
+                add(PsiManager.getInstance(project).modificationTracker.forLanguage(ProjectLanguage))
+                // Track modifications in Gd and Tscn files referenced by autoloads
+                add(PsiManager.getInstance(project).modificationTracker.forLanguage(GdLanguage))
+                add(PsiManager.getInstance(project).modificationTracker.forLanguage(TscnLanguage))
+            }
+            val combinedTracker = ModificationTracker { dependencies.sumOf { it.modificationCount } }
+            CachedValueProvider.Result.create(result, combinedTracker)
+        }
+    }
+
+    private fun computeGlobals(project: Project): List<GdAutoload> {
+        val t = all(project)
+        return t.mapNotNull {
             var path = it.value
             if (path.startsWith("\"*")) {
                 path = path.substring(2, path.length - 1)

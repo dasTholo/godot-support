@@ -6,8 +6,17 @@ import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
 import gdscript.GdLexerAdapter
+import gdscript.GdScriptBundle
 import gdscript.highlighter.GdTokenTypeSet
-import gdscript.psi.*
+import gdscript.psi.GdClassNameNmi
+import gdscript.psi.GdEnumDeclNmi
+import gdscript.psi.GdEnumValueNmi
+import gdscript.psi.GdForSt
+import gdscript.psi.GdMethodIdNmi
+import gdscript.psi.GdNamedElement
+import gdscript.psi.GdSignalIdNmi
+import gdscript.psi.GdStringValRef
+import gdscript.psi.GdVarNmi
 
 class GdUsageProvider : FindUsagesProvider {
 
@@ -37,27 +46,27 @@ class GdUsageProvider : FindUsagesProvider {
 
     override fun getType(element: PsiElement): String {
         return when(element) {
-            is GdClassNameNmi -> "classes"
-            is GdMethodIdNmi -> "methods"
-            is GdEnumDeclNmi -> "enums"
-            is GdEnumValueNmi -> "enum consts"
-            is GdSignalIdNmi -> "signals"
-            is GdVarNmi -> "variables"
-            is GdStringValRef -> "resources"
+            is GdClassNameNmi -> GdScriptBundle.message("find.usages.classes")
+            is GdMethodIdNmi -> GdScriptBundle.message("find.usages.methods")
+            is GdEnumDeclNmi -> GdScriptBundle.message("find.usages.enums")
+            is GdEnumValueNmi -> GdScriptBundle.message("find.usages.enum.consts")
+            is GdSignalIdNmi -> GdScriptBundle.message("find.usages.signals")
+            is GdVarNmi -> GdScriptBundle.message("find.usages.variables")
+            is GdStringValRef -> GdScriptBundle.message("find.usages.resources")
             else -> ""
         }
     }
 
     override fun getDescriptiveName(element: PsiElement): String {
         return when(element) {
-            is GdNamedElement -> element.name.orEmpty()
+            is GdNamedElement -> element.name ?: ""
             else -> element.text
         }
     }
 
     override fun getNodeText(element: PsiElement, useFullName: Boolean): String {
         return when(element) {
-            is GdNamedElement -> element.name.orEmpty()
+            is GdNamedElement -> element.name ?: ""
             else -> element.text
         }
     }

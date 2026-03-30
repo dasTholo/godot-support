@@ -7,9 +7,15 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.jetbrains.rider.godot.community.gdscript.GdLanguage
-import gdscript.psi.*
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdExpr
+import gdscript.psi.GdVarDeclSt
+import gdscript.psi.GdVarNmi
 
 
 class GdInlineVariableActionHandler : InlineActionHandler() {
@@ -35,8 +41,8 @@ class GdInlineVariableActionHandler : InlineActionHandler() {
             CommonRefactoringUtil.showErrorHint(
                 project,
                 editor,
-                "Declaration lacks an expression",
-                "Inline Variable",
+                RefactoringBundle.message("variable.has.no.initializer", element.name),
+                RefactoringBundle.message("inline.title"),
                 null
             )
             return
@@ -44,7 +50,13 @@ class GdInlineVariableActionHandler : InlineActionHandler() {
 
         val occurrences = ReferencesSearch.search(element).count()
         if (occurrences <= 0) {
-            CommonRefactoringUtil.showErrorHint(project, editor, "No usages", "Inline Variable", null)
+            CommonRefactoringUtil.showErrorHint(
+                project,
+                editor,
+                RefactoringBundle.message("variable.is.never.used", element.name),
+                RefactoringBundle.message("inline.title"),
+                null
+            )
             return
         }
 

@@ -6,15 +6,20 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import gdscript.action.quickFix.GdFileClassNameAction
+import gdscript.GdScriptBundle
 import gdscript.action.quickFix.GdRemoveElementsAction
 import gdscript.highlighter.GdHighlighterColors
 import gdscript.index.impl.GdClassNamingIndex
-import gdscript.psi.*
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassNameNmi
+import gdscript.psi.GdClassNaming
+import gdscript.psi.GdInheritance
+import gdscript.psi.GdInheritanceId
+import gdscript.psi.GdInheritanceIdRef
+import gdscript.psi.GdInheritanceSubIdRef
 import gdscript.psi.utils.GdClassUtil
-import gdscript.psi.utils.PsiGdFileUtil
 import gdscript.utils.PsiFileUtil.isInSdk
-import gdscript.utils.StringUtil.snakeToPascalCase
+import org.jetbrains.annotations.Nls
 
 /**
  * Checks for uniqueness of classes & existing inheritance
@@ -29,11 +34,11 @@ class GdClassNameAnnotator : Annotator {
             is GdInheritanceSubIdRef -> colorClass(element, GdHighlighterColors.CLASS_TYPE, holder)
             is GdClassNameNmi -> {
                 alreadyExists(element, holder)
-                    || classNameToFilename(element, holder)
                     || colorClass(element, GdHighlighterColors.CLASS_TYPE, holder)
             }
-            is GdClassNaming -> isDuplicated(element, holder, "class_name")
-            is GdInheritance -> isDuplicated(element, holder, "Inheritance")
+
+            is GdClassNaming -> isDuplicated(element, holder, GdScriptBundle.message("annotator.multiple.class.names.not.allowed"))
+            is GdInheritance -> isDuplicated(element, holder, GdScriptBundle.message("annotator.multiple.inheritance.not.allowed"))
         }
     }
 
@@ -61,17 +66,17 @@ class GdClassNameAnnotator : Annotator {
 //                }
 //            }
 
-            holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "Class not found")
-                .range(element.textRange)
-                .create()
+        holder
+            .newAnnotationGd(HighlightSeverity.ERROR, GdScriptBundle.message("annotator.class.not.found"))
+            .range(element.textRange)
+            .create()
 //        }
     }
 
     private fun colorInheritance(element: GdInheritanceIdRef, holder: AnnotationHolder) {
         if (element.isClassName) {
             if (GdClassUtil.getClassIdElement(element.text, element)?.containingFile?.isInSdk() == true)
-            colorClass(element, GdHighlighterColors.ENGINE_TYPE, holder)
+                colorClass(element, GdHighlighterColors.ENGINE_TYPE, holder)
             else colorClass(element, GdHighlighterColors.CLASS_TYPE, holder)
         }
     }
@@ -87,7 +92,7 @@ class GdClassNameAnnotator : Annotator {
 
     private fun alreadyExists(element: GdClassNameNmi, holder: AnnotationHolder): Boolean {
         val name = element.name
-        var message = "Class defined in global scope"
+        var message = GdScriptBundle.message("annotator.class.defined.in.global.scope")
 
         var conflict = GdClassNamingIndex.INSTANCE.getGloballyWithoutSelf(element).isNotEmpty()
 
@@ -100,7 +105,7 @@ class GdClassNameAnnotator : Annotator {
             while (prev != null && !conflict) {
                 if (prev is GdClassDeclTl && prev.classNameNmi?.name == name) {
                     conflict = true
-                    message = "Class already defined"
+                    message = GdScriptBundle.message("annotator.class.already.defined")
                 }
                 prev = prev.prevSibling
             }
@@ -108,7 +113,7 @@ class GdClassNameAnnotator : Annotator {
 
         if (conflict) {
             holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, message)
+                .newAnnotationGd(HighlightSeverity.ERROR, message)
                 .range(element.textRange)
                 .create()
             return true
@@ -117,26 +122,10 @@ class GdClassNameAnnotator : Annotator {
         return false
     }
 
-    private fun classNameToFilename(element: GdClassNameNmi, holder: AnnotationHolder): Boolean {
-        if (element.parent !is GdClassNaming) return false
-
-        val name = element.name
-        val filename = PsiGdFileUtil.filename(element.containingFile).snakeToPascalCase()
-        if (filename.lowercase() != name.lowercase()) {
-            holder
-                .newAnnotationGd(element.project, HighlightSeverity.WEAK_WARNING, "Class name does not match filename")
-                .range(element.textRange)
-                .withFix(GdFileClassNameAction(filename, element))
-                .create()
-            return true
-        }
-        return false
-    }
-
-    private fun isDuplicated(element: PsiElement, holder: AnnotationHolder, type: String) {
+    private fun isDuplicated(element: PsiElement, holder: AnnotationHolder, @Nls message: String) {
         if (PsiTreeUtil.getPrevSiblingOfType(element, element::class.java) !== null) {
             holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "$type already defined")
+                .newAnnotationGd(HighlightSeverity.ERROR, message)
                 .range(element.textRange)
                 .withFix(GdRemoveElementsAction(element))
                 .create()

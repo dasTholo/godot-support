@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import java.net.URI
@@ -13,6 +14,7 @@ plugins {
     alias(libs.plugins.gradleIntelliJPlatform)
     alias(libs.plugins.gradleJvmWrapper)
     alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.grammarkit)
     id("java")
 }
 
@@ -56,10 +58,14 @@ dependencies {
         localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
 
+        bundledPlugin("com.intellij.modules.json")
+        bundledModule("intellij.platform.dap")
+
         bundledLibrary(provider {
             project.intellijPlatform.platformPath.resolve("lib/testFramework.jar").pathString
         })
     }
+    implementation(libs.jflex)
     testImplementation(libs.openTest4J)
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.0")
@@ -75,7 +81,31 @@ intellijPlatform{
     }
 }
 
+grammarKit {
+    // todo: figure out later
+}
+
+val lexers = listOf(
+    Triple("config", "config", "src/main/kotlin/config/GdConfig.flex"),
+    Triple("gdscript", "gdscript", "src/main/kotlin/gdscript/Gd.flex"),
+    Triple("gdscriptHighlighter", "gdscript", "src/main/kotlin/gdscript/GdHighlight.flex"),
+    Triple("tscn", "tscn", "src/main/kotlin/tscn/Tscn.flex"),
+    Triple("project", "project", "src/main/kotlin/project/Project.flex"),
+)
+
+lexers.forEach { (lexerName, folder, lexerPath) ->
+    project.tasks.register<GenerateLexerTask>("${lexerName}Lexer") {
+        sourceFile = file(lexerPath)
+        targetOutputDir = file("src/main/gen/$folder")
+        purgeOldFiles.set(false)
+    }
+}
+
 tasks {
+    compileKotlin {
+        dependsOn( lexers.map { "${it.first}Lexer" })
+    }
+    
     // todo: tobe removed with RIDER-127007 Different approach to GD sdk
     register("prepare") {
         doLast {
@@ -138,7 +168,9 @@ tasks {
     }
 
     runIde {
-        dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
+        if (gradle.includedBuilds.any { it.name == "community" }) {
+            dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
+        }
         jvmArgs("-Xmx1500m")
     }
 

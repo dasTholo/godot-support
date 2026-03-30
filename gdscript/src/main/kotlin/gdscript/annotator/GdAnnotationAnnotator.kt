@@ -3,10 +3,14 @@ package gdscript.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.util.text.HtmlBuilder
+import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.psi.PsiElement
+import gdscript.GdScriptBundle
 import gdscript.psi.GdAnnotationTl
 import gdscript.psi.utils.GdExprUtil
 import gdscript.utils.GdAnnotationUtil
+import org.jetbrains.annotations.NonNls
 
 /**
  * Check if annotation exists & tool is not within inner class
@@ -19,7 +23,7 @@ class GdAnnotationAnnotator : Annotator {
         val definition = GdAnnotationUtil.get(element)
         if (definition == null) {
             holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "Unknown annotation")
+                .newAnnotationGd(HighlightSeverity.ERROR, GdScriptBundle.message("annotator.annotation.unknown"))
                 .range(element.textRange)
                 .create()
             return
@@ -31,20 +35,25 @@ class GdAnnotationAnnotator : Annotator {
         // Check number of arguments
         if (!definition.variadic && usedParams.size > definitionParams.size) {
             holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "Too many arguments")
+                .newAnnotationGd(
+                    HighlightSeverity.ERROR,
+                    GdScriptBundle.message("annotator.annotation.too.many.arguments")
+                )
                 .range(element.textRange)
                 .create()
             return
         }
         if (definition.required > 0 && usedParams.size < definition.required) {
             holder
-                .newAnnotationGd(element.project, HighlightSeverity.ERROR, "Not enough arguments")
+                .newAnnotationGd(
+                    HighlightSeverity.ERROR, GdScriptBundle.message("annotator.annotation.not.enough.arguments")
+                )
                 .range(element.textRange)
                 .create()
             return
         }
 
-        var expectedType = "Variant"
+        @NonNls var expectedType = "Variant"
         var name = ""
         val definedKeys = definitionParams.keys.toTypedArray()
         usedParams.forEachIndexed { index, actualType ->
@@ -55,9 +64,26 @@ class GdAnnotationAnnotator : Annotator {
 
             val actualReturnType = actualType.returnType
             if (!GdExprUtil.typeAccepts(actualReturnType, expectedType, element)) {
+                val tooltip = HtmlBuilder()
+                    .append(GdScriptBundle.message("annotator.annotation.type.mismatch.text", name))
+                    .append(
+                        HtmlChunk.tag("table").children(
+                            HtmlChunk.tag("tr").children(
+                                HtmlChunk.tag("td").addText(GdScriptBundle.message("annotator.required")),
+                                HtmlChunk.tag("td").addText(expectedType)
+                            ),
+                            HtmlChunk.tag("tr").children(
+                                HtmlChunk.tag("td").addText(GdScriptBundle.message("annotator.found")),
+                                HtmlChunk.tag("td").addText(actualReturnType)
+                            )
+                        )
+                    )
+                    .wrapWithHtmlBody()
+                    .toString()
+
                 holder
-                    .newAnnotationGd(element.project, HighlightSeverity.ERROR, "")
-                    .tooltip("<html><body>Type mismatch for $name<table><tr><td>Required:</td><td>$expectedType</td></tr><tr><td>Found:</td><td>$actualReturnType</td></tr></table></html></body>")
+                    .newAnnotationGd(HighlightSeverity.ERROR, "")
+                    .tooltip(tooltip)
                     .range(actualType.textRange)
                     .create()
             }

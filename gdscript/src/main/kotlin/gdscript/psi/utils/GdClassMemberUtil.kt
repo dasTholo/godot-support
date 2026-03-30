@@ -9,9 +9,41 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import gdscript.GdKeywords
-import gdscript.index.impl.*
+import gdscript.index.impl.GdClassNamingIndex
+import gdscript.index.impl.GdClassVarDeclIndex
+import gdscript.index.impl.GdConstDeclIndex
+import gdscript.index.impl.GdEnumDeclIndex
+import gdscript.index.impl.GdMethodDeclIndex
+import gdscript.index.impl.GdSignalDeclIndex
 import gdscript.model.BoolVal
-import gdscript.psi.*
+import gdscript.psi.GdAttributeEx
+import gdscript.psi.GdBindingPattern
+import gdscript.psi.GdCallEx
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdElifSt
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdEnumValue
+import gdscript.psi.GdExpr
+import gdscript.psi.GdFile
+import gdscript.psi.GdForSt
+import gdscript.psi.GdFuncDeclEx
+import gdscript.psi.GdIfSt
+import gdscript.psi.GdIsEx
+import gdscript.psi.GdMatchBlock
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdParam
+import gdscript.psi.GdPatternList
+import gdscript.psi.GdRefIdRef
+import gdscript.psi.GdSetDecl
+import gdscript.psi.GdSignalDeclTl
+import gdscript.psi.GdTypes
+import gdscript.psi.GdVarDeclSt
+import gdscript.psi.GdVarNmi
+import gdscript.psi.GdWhileSt
+import gdscript.psi.utils.GdClassUtil.getClassIdElement
 import project.psi.util.ProjectAutoloadUtil
 
 object GdClassMemberUtil {
@@ -32,8 +64,7 @@ object GdClassMemberUtil {
      * List available declarations (const, var, enum, signal, method, ...) from given PsiElement skipping itself
      * @param searchFor stops and returns matching element
      */
-    @SuppressWarnings()
-    fun listDeclarations(
+    private fun listDeclarations(
         element: PsiElement,
         searchFor: PsiElement,
         onlyLocalScope: Boolean = false,
@@ -92,6 +123,19 @@ object GdClassMemberUtil {
                 if (calledOn.endsWith(".gd")) {
                     static = null
                 }
+                // Hybrid handling for _GlobalScope singletons shadowing class names (e.g., `Input`).
+                // If the qualifier text looks like a class name (matches the inferred type name) AND
+                // there exists a variable with the same name in _GlobalScope, expose both static and
+                // instance members by switching to tri-state `static = null`.
+                run {
+                    val qualifierText = calledOnPsi.text
+                    val fullOwnerId = GdClassUtil.getFullClassId(calledOnPsi)
+                    val looksLikeClassName = (calledOn == qualifierText) || (calledOn == "$fullOwnerId.$qualifierText")
+                    val globalHasVarWithSameName = !checkGlobalStaticMatch(element, qualifierText)
+                    if (looksLikeClassName && globalHasVarWithSameName) {
+                        static = null
+                    }
+                }
             }
         }
 
@@ -116,7 +160,7 @@ object GdClassMemberUtil {
         // If it's stand-alone ref_id, adds also _Global & ClassNames - Classes are added as last due to matching name of some GlobalVars with class_name
         if (calledOn == null && !ignoreGlobalScope) {
             arrayOf(GdKeywords.GLOBAL_SCOPE, GdKeywords.GLOBAL_GD_SCRIPT).forEach {
-                val globalParent = GdClassUtil.getClassIdElement(it, element)
+                val globalParent = getClassIdElement(it, element, project)
                 if (globalParent != null) {
                     val local = addsParentDeclarations(
                         GdClassUtil.getOwningClassElement(globalParent),
@@ -162,25 +206,35 @@ object GdClassMemberUtil {
                 calledOn = "Dictionary"
             }
 
-            // If qualifier resolves to a named enum, expose its values for member lookup (e.g., _Anim.FLOOR)
-            findDeclaration(calledOnPsi!!)?.let { decl ->
-                if (decl is GdEnumDeclTl) {
+            // If qualifier resolves to a named enum, expose its values for member lookup (e.g., Class.Enum.VALUE)
+            run {
+                // First, try resolving the entire qualifier expression directly
+                val direct = findDeclaration(calledOnPsi!!)
+                val enumDecl = when (direct) {
+                    is GdEnumDeclTl -> direct
+                    else -> {
+                        // If that failed, try resolving the right-most identifier within the qualifier
+                        val refs = PsiTreeUtil.findChildrenOfType(calledOnPsi, GdRefIdRef::class.java)
+                            .sortedBy { it.textRange.startOffset }
+                        val lastRef = refs.lastOrNull()
+                        val lastDecl = lastRef?.let { findDeclaration(it) }
+                        lastDecl as? GdEnumDeclTl
+                    }
+                }
+                if (enumDecl != null) {
                     if (searchFor != null) {
-                        val localVal = decl.enumValueList.find { eval -> eval.enumValueNmi.name == searchFor }
+                        val localVal = enumDecl.enumValueList.find { eval -> eval.enumValueNmi.name == searchFor }
                         if (localVal != null) return arrayOf(localVal)
                     }
-                    result.addAll(decl.enumValueList)
+                    result.addAll(enumDecl.enumValueList)
                     if (searchFor == null) return result.toTypedArray()
                 }
             }
 
-            parent = GdClassUtil.getClassIdElement(calledOn, element, project)
+            parent = getClassIdElement(calledOn, element, project)
             if (parent == null) {
                 val classId = GdClassUtil.getFullClassId(element)
-                parent = GdClassUtil.getClassIdElement(
-                    "$classId.${calledOn}",
-                    element,
-                )
+                parent = getClassIdElement("$classId.${calledOn}", element, project)
                 // Try autoload classes
                 if (parent == null) {
                     parent = ProjectAutoloadUtil.findFromAlias(calledOn, element)
@@ -195,7 +249,13 @@ object GdClassMemberUtil {
 
         // Recursively iterate over all extended classes
         if (!ignoreParents && !hitLocal.value) {
-            val local = collectFromParents(parent, result, project, static, searchFor)
+            // Important nuance: for unqualified completion (calledOn == null), do not suppress
+            // file-level declarations by passing a concrete static flag; keep it nullable so that
+            // listClassMemberDeclarations won't early-return for PsiFile owners. This preserves
+            // SDK/_Global and file-root members in plain completion, while still restricting them
+            // for qualified completion (calledOn != null).
+            val staticForParents = if (calledOn == null && parent is PsiFile) null else static
+            val local = collectFromParents(parent, result, project, staticForParents, searchFor)
             if (local != null) return arrayOf(local)
         }
 
@@ -207,11 +267,12 @@ object GdClassMemberUtil {
                 val autoLoaded = autoLoads.find { it.key == searchFor }
                 if (autoLoaded != null) return arrayOf(autoLoaded)
             }
-            result.addAll(GdClassNamingIndex.INSTANCE.getAllValues(project))
+            // todo: this call is time-consuming and it is useful for completion of base types, which we have from LSP anyway
+            // result.addAll(GdClassNamingIndex.INSTANCE.getAllValues(project))
             result.addAll(autoLoads)
         }
 
-        if (searchFor != null) return emptyArray()
+        if (searchFor != null) return emptyArray() // this one seems weird, but removing it brakes tests
         return result.toTypedArray()
     }
 
@@ -226,8 +287,14 @@ object GdClassMemberUtil {
         static: Boolean? = null,
         search: String? = null,
     ): PsiElement? {
+        val visited = mutableSetOf<PsiElement>()
         var par = parent
         while (par != null) {
+            // Cycle detection: prevent infinite loops in case of circular inheritance
+            if (!visited.add(par)) {
+                break
+            }
+
             val local = addsParentDeclarations(par, result, static, search)
             if (search != null && local != null) return local
             if (par is GdClassDeclTl) {
@@ -253,6 +320,22 @@ object GdClassMemberUtil {
         hitLocal: BoolVal? = null,
     ): HashMap<String, PsiElement> {
         val locals: HashMap<String, PsiElement> = hashMapOf()
+
+        // Special handling: inside an enum value initializer, only previously declared enum values are visible
+        run {
+            val enumValue = PsiTreeUtil.getParentOfType(element, GdEnumValue::class.java)
+            if (enumValue != null) {
+                val enumDecl = PsiTreeUtil.getParentOfType(enumValue, GdEnumDeclTl::class.java)
+                if (enumDecl != null) {
+                    for (v in enumDecl.enumValueList) {
+                        if (v == enumValue) break
+                        val nmi = v.enumValueNmi
+                        val name = nmi.name
+                        if (!locals.containsKey(name)) locals[name] = v
+                    }
+                }
+            }
+        }
 
         // If inside a match branch GUARD (before ':'), bindings from the pattern list are visible
         run {
@@ -524,6 +607,11 @@ object GdClassMemberUtil {
                 }
             }
         } else {
+            // When completing with a qualifier (static or instance), avoid mixing in file-level declarations,
+            // which would otherwise expose unrelated top-level classes like the qualifier's ancestors.
+            if (classElement is PsiFile && static != null) {
+                return mutableListOf()
+            }
             PsiTreeUtil.getStubChildrenOfTypeAsList(classElement, GdConstDeclTl::class.java).forEach {
                 members.add(it)
             }

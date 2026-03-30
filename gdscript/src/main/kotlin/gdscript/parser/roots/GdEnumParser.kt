@@ -3,7 +3,16 @@ package gdscript.parser.roots
 import gdscript.parser.GdBaseParser
 import gdscript.parser.GdPsiBuilder
 import gdscript.parser.recovery.GdRecovery
-import gdscript.psi.GdTypes.*
+import gdscript.psi.GdTypes.COMMA
+import gdscript.psi.GdTypes.ENUM
+import gdscript.psi.GdTypes.ENUM_DECL_NMI
+import gdscript.psi.GdTypes.ENUM_DECL_TL
+import gdscript.psi.GdTypes.ENUM_VALUE
+import gdscript.psi.GdTypes.ENUM_VALUE_NMI
+import gdscript.psi.GdTypes.EQ
+import gdscript.psi.GdTypes.IDENTIFIER
+import gdscript.psi.GdTypes.LCBR
+import gdscript.psi.GdTypes.RCBR
 
 object GdEnumParser : GdBaseParser {
 
@@ -39,8 +48,8 @@ object GdEnumParser : GdBaseParser {
 
         var ok = true
         if (b.passToken(EQ)) {
-            b.passToken(PLUS, MINUS)
-            ok = ok && b.consumeToken(NUMBER)
+            // Accept a full expression to support references to previously declared enum values
+            ok = gdscript.parser.expr.GdExprParser.parse(b, l + 1, true)
         }
 
         return b.exitSection(ok)

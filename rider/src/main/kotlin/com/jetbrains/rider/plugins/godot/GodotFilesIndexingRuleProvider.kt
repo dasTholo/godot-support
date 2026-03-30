@@ -13,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.io.path.Path
 
+// In Rider, when files are not in the csproj, GDScript and TSCN files may be not indexed
+// To ensure features like GoToFile and ScenePreview would work, we make sure .gd and .tscn are indexed
+
 class GodotFilesIndexingRuleProvider : RiderFilesIndexingRuleProvider {
     override suspend fun collectRules(project: Project): List<RiderFilesIndexingRule> {
         // for some obscure reason, adding indexing rules to a virtual solution would exclude them from Solution scope of the GotoFile.
@@ -32,7 +35,9 @@ class GodotFilesIndexingRuleProvider : RiderFilesIndexingRuleProvider {
 
         val rule = RiderFilesIndexingRule({
             if (!it.isFile) return@RiderFilesIndexingRule null
-            if (it.name.endsWith(".gd", true) && VfsUtil.isAncestor(projectBaseFile, it, true))
+            if ((it.name.endsWith(".gd", true)
+                    || it.name.endsWith(".tscn", true)) // https://youtrack.jetbrains.com/issue/RIDER-131262/Rider-Godots-scene-preview-doesnt-work-in-c.#focus=Comments-27-13239615.0-0
+                && VfsUtil.isAncestor(projectBaseFile, it, true))
                 it
             else
                 null

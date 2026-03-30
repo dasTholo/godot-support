@@ -49,7 +49,10 @@ STRING_NL = {ONE_NL}
 STRING_ESC = \\ [^] | \\ ({WHITE_SPACE})+ (\n|\r)
 
 SINGLE_QUOTED_CONTENT = {STRING_ESC} | [^'\\\r\n]
-SINGLE_QUOTED_LITERAL = \' {SINGLE_QUOTED_CONTENT}* \'?
+SINGLE_QUOTED_LITERAL = [\$\^]?\' {SINGLE_QUOTED_CONTENT}* \'?
+
+TRIPLE_SINGLE_QUOTED_CONTENT = {SINGLE_QUOTED_CONTENT} | {STRING_NL} | \'(\')?[^\'\\$]
+TRIPLE_SINGLE_QUOTED_LITERAL = \'\'\' {TRIPLE_SINGLE_QUOTED_CONTENT}* \'\'\'
 
 DOUBLE_QUOTED_CONTENT = {STRING_ESC} | [^\"\n\r]
 DOUBLE_QUOTED_LITERAL = [\$\^]?\" {DOUBLE_QUOTED_CONTENT}* \"
@@ -91,6 +94,7 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     "for"          { return GdTypes.FOR; }
     "in"           { return GdTypes.IN; }
     "match"        { return GdTypes.MATCH; }
+    "when"         { return GdTypes.WHEN; }
     "await"        { return GdTypes.AWAIT; }
     "static"       { return GdTypes.STATIC; }
     "vararg"       { return GdTypes.VARARG; }
@@ -111,6 +115,7 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     "-"            { return GdTypes.MINUS; }
     "++"           { return GdTypes.PPLUS; }
     "--"           { return GdTypes.MMINUS; }
+    "..."          { return GdTypes.DOTDOTDOT; }
     "."            { return GdTypes.DOT; }
     ","            { return GdTypes.COMMA; }
     ":="           { return GdTypes.CEQ; }
@@ -155,6 +160,7 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     }
 
     {SINGLE_QUOTED_LITERAL}        { return GdTypes.STRING; }
+    {TRIPLE_SINGLE_QUOTED_LITERAL} { return GdTypes.STRING; }
     {DOUBLE_QUOTED_LITERAL}        { return GdTypes.STRING; }
     {TRIPLE_DOUBLE_QUOTED_LITERAL} { return GdTypes.STRING; }
 

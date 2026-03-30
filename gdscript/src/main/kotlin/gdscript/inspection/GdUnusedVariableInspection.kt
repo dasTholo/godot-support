@@ -2,18 +2,19 @@ package gdscript.inspection
 
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
-import gdscript.GdKeywords
+import gdscript.GdScriptBundle
 import gdscript.psi.GdConstDeclSt
-import gdscript.psi.GdTyped
 import gdscript.psi.GdVarDeclSt
 import gdscript.psi.GdVisitor
-import gdscript.utils.PsiReferenceUtil.resolveRef
 import gdscript.utils.ProjectUtil.contentScope
 
 class GdUnusedVariableInspection : GdUnusedInspection() {
 
-    override val description: String = "Unused variable"
-    override val text: String = "Remove [{NAME}] variable"
+    override val description: String = GdScriptBundle.message("inspection.unused.variable.description")
+
+    override fun removeText(symbol: String): String {
+        return GdScriptBundle.message("inspection.unused.variable.text", symbol)
+    }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : GdVisitor() {

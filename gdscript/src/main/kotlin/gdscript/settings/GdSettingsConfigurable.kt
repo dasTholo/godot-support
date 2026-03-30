@@ -2,6 +2,7 @@ package gdscript.settings
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import gdscript.GdScriptBundle
 import javax.swing.JComponent
 
 class GdSettingsConfigurable(val project: Project) : Configurable {
@@ -10,7 +11,7 @@ class GdSettingsConfigurable(val project: Project) : Configurable {
 
 
     override fun getDisplayName(): String {
-        return "GdScript Settings"
+        return GdScriptBundle.message("settings.configurable.name.gdscript.settings")
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -32,6 +33,10 @@ class GdSettingsConfigurable(val project: Project) : Configurable {
             || component?.criticals != settings.criticals
             || component?.warnings != settings.warnings
             || component?.notes != settings.notes
+            || component?.docProvider != settings.docProvider
+            || component?.lspConnectionMode?.name != settings.lspConnectionMode
+            || component?.lspRemoteHostPort != settings.lspRemoteHostPort
+            || component?.lspUseDynamicPort != settings.lspUseDynamicPort
     }
 
     override fun apply() {
@@ -42,6 +47,12 @@ class GdSettingsConfigurable(val project: Project) : Configurable {
         settings.criticals = component?.criticals ?: "ALERT,ATTENTION,CAUTION,CRITICAL,DANGER,SECURITY"
         settings.warnings = component?.warnings ?: "BUG,DEPRECATED,FIXME,HACK,TASK,TBD,TODO,WARNING"
         settings.notes = component?.notes ?: "INFO,NOTE,NOTICE,TEST,TESTING"
+        settings.docProvider = component?.docProvider ?: GdDocProviderMode.GDSCRIPT
+        settings.lspConnectionMode = (component?.lspConnectionMode ?: GdLspConnectionMode.ConnectRunningEditor).name
+        settings.lspRemoteHostPort = component?.lspRemoteHostPort ?: 6005
+        settings.lspUseDynamicPort = component?.lspUseDynamicPort ?: false
+
+        GdLspSettingsFlowService.getInstance(project).settingsChanged()
     }
 
     override fun reset() {
@@ -52,6 +63,10 @@ class GdSettingsConfigurable(val project: Project) : Configurable {
         component?.criticals = settings.criticals
         component?.warnings = settings.warnings
         component?.notes = settings.notes
+        component?.docProvider = settings.docProvider
+        component?.lspConnectionMode = GdLspConnectionMode.valueOf(settings.lspConnectionMode)
+        component?.lspRemoteHostPort = settings.lspRemoteHostPort
+        component?.lspUseDynamicPort = settings.lspUseDynamicPort
     }
 
     override fun disposeUIResources() {

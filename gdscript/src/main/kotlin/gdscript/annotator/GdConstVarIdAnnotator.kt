@@ -5,8 +5,16 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import gdscript.psi.*
+import gdscript.GdScriptBundle
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassNaming
+import gdscript.psi.GdFile
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdNamedIdElement
+import gdscript.psi.GdParam
 import gdscript.psi.GdPattern
+import gdscript.psi.GdSetDecl
+import gdscript.psi.GdVarNmi
 import gdscript.psi.utils.GdClassMemberUtil
 
 /**
@@ -34,9 +42,10 @@ class GdConstVarIdAnnotator : Annotator {
         val declaration = GdClassMemberUtil.findDeclaration(element, true, inMethod, true)
         if (declaration != null && declaration !is GdClassNaming) {
             holder
-                .newAnnotationGd(element.project,
-                        HighlightSeverity.ERROR,
-                        "[${element.name}] is already defined")
+                .newAnnotationGd(
+                    HighlightSeverity.ERROR,
+                    GdScriptBundle.message("annotator.property.is.already.defined", element.name.toString())
+                )
                 .range(element.textRange)
                 .create()
         }

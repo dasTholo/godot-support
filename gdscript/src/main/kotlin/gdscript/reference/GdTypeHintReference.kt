@@ -1,5 +1,6 @@
 package gdscript.reference
 
+import GdScriptPluginIcons
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
@@ -7,14 +8,23 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.impl.source.resolve.ResolveCache
 import com.intellij.psi.util.PsiTreeUtil
-import gdscript.GdIcon
 import gdscript.GdKeywords
 import gdscript.completion.GdLookup
 import gdscript.completion.utils.GdClassCompletionUtil
 import gdscript.completion.utils.GdClassCompletionUtil.lookup
 import gdscript.completion.utils.GdEnumCompletionUtil.lookup
 import gdscript.index.impl.GdClassNamingIndex
-import gdscript.psi.*
+import gdscript.psi.GdCallEx
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclSt
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdElementFactory
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdSuite
+import gdscript.psi.GdTypeHintRef
+import gdscript.psi.GdVarDeclSt
 import gdscript.psi.utils.GdClassUtil
 import gdscript.psi.utils.GdCommonUtil
 import gdscript.psi.utils.GdInheritanceUtil

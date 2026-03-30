@@ -8,11 +8,16 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.protocol.SolutionExtListener
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.reactive.IOptProperty
+import com.jetbrains.rd.util.reactive.IProperty
+import com.jetbrains.rd.util.reactive.ISignal
+import com.jetbrains.rd.util.reactive.OptProperty
+import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.Signal
+import com.jetbrains.rd.util.reactive.adviseNotNull
 import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rider.model.godot.frontendBackend.GodotDescriptor
 import com.jetbrains.rider.model.godot.frontendBackend.GodotFrontendBackendModel
-import com.jetbrains.rider.model.godot.frontendBackend.LanguageServerConnectionMode
 import com.jetbrains.rider.plugins.godot.run.GodotRunConfigurationGenerator
 import com.jetbrains.rider.plugins.godot.run.configurations.GodotDebugRunConfiguration
 import com.jetbrains.rider.plugins.godot.run.configurations.GodotDebugRunConfigurationType
@@ -23,6 +28,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -32,34 +38,32 @@ import kotlin.io.path.exists
 class GodotProjectDiscoverer(project: Project) {
 
     val godotDescriptor : IOptProperty<GodotDescriptor> = OptProperty()
-    val lspConnectionMode: IProperty<LanguageServerConnectionMode?> = Property(null)
-    val remoteHostPort: IProperty<Int?> = Property(null)
-    val useDynamicPort: IProperty<Boolean?> = Property(null)
     val godot3Path : IProperty<String?> = Property(null)
     val godot4Path : IProperty<String?> = Property(null)
     val godotPath : IOptProperty<String> = OptProperty()
-
-    val mainProjectBasePath: CompletableDeferred<Path> = CompletableDeferred()
-    val isGodotProject : CompletableDeferred<Boolean> = CompletableDeferred()
-
-    val projectMetadataModificationSignal: ISignal<Unit> = Signal()
+    val mainProjectBasePathFlow: MutableStateFlow<Path?> = MutableStateFlow(null)
+    val isPureGdScriptProjectFlow: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+    val executablePathFlow: MutableStateFlow<Path?> = MutableStateFlow(null)
+    val isGodotProject: CompletableDeferred<Boolean> = CompletableDeferred()
 
     init {
         val lifetime = GodotProjectLifetimeService.getLifetime(project)
         godot3Path.adviseNotNull(lifetime){
             godotPath.set(it)
+            executablePathFlow.value = Path(it)
         }
         godot4Path.adviseNotNull(lifetime){
             godotPath.set(it)
+            executablePathFlow.value = Path(it)
         }
 
         godotDescriptor.adviseNotNull(lifetime){
             thisLogger().info("Godot godotDescriptor: $it")
             val basePath = Path(it.mainProjectBasePath)
             lifetime.launch(Dispatchers.IO) {
-                val g3path = GodotMetadataFileWatcherUtil.getFromMonoMetadataPath(basePath)
-                             ?: GodotMetadataFileWatcherUtil.getGodot3Path(basePath) ?: getGodotPathFromPlayerRunConfiguration(project)
-                val g4path = GodotMetadataFileWatcherUtil.getGodot4Path(basePath) ?: getGodotPathFromCorePlayerRunConfiguration(project)
+                val g3path = DotNetGodotMetadataFileWatcherUtil.getFromMonoMetadataPath(basePath)
+                             ?: DotNetGodotMetadataFileWatcherUtil.getGodot3Path(basePath) ?: getGodotPathFromPlayerRunConfiguration(project)
+                val g4path = DotNetGodotMetadataFileWatcherUtil.getGodot4Path(basePath) ?: getGodotPathFromCorePlayerRunConfiguration(project)
                 withContext(Dispatchers.EDT) {
                     godot3Path.set(g3path)
                     godot4Path.set(g4path)
@@ -110,11 +114,9 @@ class GodotProjectDiscoverer(project: Project) {
             model.isGodotProject.advise(lifetime) {getInstance(session.project).isGodotProject.complete(it) }
             model.godotDescriptor.advise(lifetime){
                 getInstance(session.project).godotDescriptor.set(it)
-                getInstance(session.project).mainProjectBasePath.complete(Path(it.mainProjectBasePath))
+                getInstance(session.project).mainProjectBasePathFlow.value = Path(it.mainProjectBasePath)
+                getInstance(session.project).isPureGdScriptProjectFlow.value = it.isPureGdScriptProject
             }
-            model.backendSettings.lspConnectionMode.adviseNotNull(lifetime){ getInstance(session.project).lspConnectionMode.set(it) }
-            model.backendSettings.remoteHostPort.adviseNotNull(lifetime) { getInstance(session.project).remoteHostPort.set(it) }
-            model.backendSettings.useDynamicPort.adviseNotNull(lifetime) { getInstance(session.project).useDynamicPort.set(it) }
         }
     }
 }

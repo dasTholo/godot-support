@@ -8,7 +8,7 @@ import gdscript.completion.utils.GdMethodCompletionUtil.lookupDeclaration
 import gdscript.psi.GdTypes
 import gdscript.psi.utils.GdClassMemberUtil
 import gdscript.psi.utils.GdClassMemberUtil.methods
-import gdscript.psi.utils.GdInheritanceUtil
+import gdscript.psi.utils.GdInheritanceUtil.getExtendedElement
 import gdscript.utils.CompletionParametersUtil.indent
 
 /**
@@ -21,7 +21,7 @@ class GdMethodDeclCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         val element = parameters.originalPosition ?: return
         if (METHOD_ID.accepts(parameters.position)) {
-            val parent = GdInheritanceUtil.getExtendedElement(element) ?: return
+            val parent = getExtendedElement(element, element.project) ?: return
             val list = mutableListOf<Any>()
             GdClassMemberUtil.collectFromParents(parent, list, element.project)
             list

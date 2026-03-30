@@ -2,11 +2,11 @@ package gdscript.utils
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.GlobalSearchScope.getScopeRestrictedByFileTypes
+import com.intellij.psi.search.ProjectScope
 import com.jetbrains.rider.godot.community.gdscript.GdFileType
 import tscn.TresFileType
-import tscn.TscnFileType
+import com.jetbrains.rider.godot.community.tscn.TscnFileType
 
 object ProjectUtil {
 

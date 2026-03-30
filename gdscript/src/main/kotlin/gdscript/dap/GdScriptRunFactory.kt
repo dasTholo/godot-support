@@ -1,0 +1,58 @@
+package gdscript.dap
+
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationOptions
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.platform.dap.DapStartRequest
+import com.intellij.util.xmlb.annotations.Property
+import org.jetbrains.annotations.NotNull
+
+open class GdScriptRunFactory(type: ConfigurationType) : ConfigurationFactory(type), DumbAware {
+    override fun getId(): String = "GdScriptRunFactory"
+
+    override fun isEditableInDumbMode(): Boolean = true
+
+    override fun getOptionsClass(): Class<GdScriptDebugConfigurationOptions> = GdScriptDebugConfigurationOptions::class.java
+
+    companion object Defaults {
+        const val DEFAULT_PORT: Int = 6006
+        const val DEFAULT_ADDRESS: String = "127.0.0.1"
+        val DEFAULT_REQUEST: DapStartRequest = DapStartRequest.Launch
+        const val DEFAULT_SCENE: String = "main"
+        val DEFAULT_EMPTY_JSON: String = """
+            {
+            
+            }
+        """.trimIndent()
+
+        val DEFAULT_FULL_JSON: String = """
+            {
+              // Launch: "Launch a new instance of the game",
+              // Attach: "Attach to an already running game, which was started from the Godot Editor"
+              "request" : "${DEFAULT_REQUEST.name}",
+              "debugServer" : $DEFAULT_PORT, // port should match the Debug Adapter port in the Godot Editor project settings.
+              "scene" : "$DEFAULT_SCENE", // main, current, res://path/to/file.tscn
+              
+              // "playArgs" : [ "--editor" ], // debugging a tool script
+              // "playArgs": ["--debug-collisions","--debug-navigation"], // different options
+              
+              // one click deploy and debug via Godot Editor:
+              // "platform": "Android", // including Android, iOS, Web and W4 consoles
+              // "device": "0", // index of the device of a "platform" type
+            }
+        """.trimIndent()
+    }
+
+    override fun createTemplateConfiguration(@NotNull project: Project): RunConfiguration =
+        GdScriptRunConfiguration(this.name, project, this).apply {
+            json = DEFAULT_FULL_JSON
+        }
+
+    class GdScriptDebugConfigurationOptions : RunConfigurationOptions() {
+        @get:Property
+        var json: String? by string("")
+    }
+}

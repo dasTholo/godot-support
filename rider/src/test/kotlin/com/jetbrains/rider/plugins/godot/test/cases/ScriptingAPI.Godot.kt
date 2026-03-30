@@ -4,18 +4,24 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.util.io.FileUtil.*
+import com.intellij.openapi.util.io.FileUtil.copyDir
 import com.jetbrains.rdclient.util.idea.waitAndPump
 import com.jetbrains.rider.plugins.godot.run.GodotRunConfigurationGenerator
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldNotBeNull
-import com.jetbrains.rider.test.framework.*
+import com.jetbrains.rider.test.facades.environment.RiderTestExecutionTarget
+import com.jetbrains.rider.test.framework.TEST_DATA_DOWNLOAD_URL
+import com.jetbrains.rider.test.framework.downloadAndExtractTestToolArchiveArtifactIntoPersistentCache
+import com.jetbrains.rider.test.framework.executeWithGold
+import com.jetbrains.rider.test.framework.frameworkLogger
 import com.jetbrains.rider.test.scriptingApi.DebugTestExecutionContext
 import com.jetbrains.rider.test.scriptingApi.debugProgram
 import com.jetbrains.rider.test.scriptingApi.waitForDotNetDebuggerInitializedOrCanceled
 import com.jetbrains.rider.utils.NullPrintStream
 import java.io.File
+import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 // region Constants
 const val godotNumberVersion = "4.4.1"
@@ -31,7 +37,7 @@ fun downloadAndExtractGodot(version: String): File {
         else -> error("Unsupported OS for Godot Mono")
     }
 
-    val extractedDir = downloadAndExtractTestToolArchiveArtifactIntoPersistentCache("$TEST_DATA_DOWNLOAD_URL/$godotZipName").canonicalFile
+    val extractedDir = downloadAndExtractTestToolArchiveArtifactIntoPersistentCache(RiderTestExecutionTarget.fromCurrentMachine(), "$TEST_DATA_DOWNLOAD_URL/$godotZipName").canonicalFile
 
     val godotExecutable = extractedDir.resolve(when {
                                                    SystemInfo.isWindows -> {
@@ -65,7 +71,7 @@ fun putGodotProjectToTempTestDir(
 // endregion
 
 // region Godot Execution
-fun startGodot(godotExecutable: File, projectPath: String, logPath: File, dotnetSdk: String): Process {
+fun startGodot(godotExecutable: File, projectPath: String, logPath: Path, dotnetSdk: String, timeoutMinutes: Long = 3): Process {
     val logFile = File(logPath.toString(), "Godot_${System.currentTimeMillis()}.log")
 
     val command = mutableListOf(
@@ -84,7 +90,7 @@ fun startGodot(godotExecutable: File, projectPath: String, logPath: File, dotnet
     val process = processBuilder.start()
     frameworkLogger.info("Godot process started (pid=${process.pid()})")
 
-    val exitCode = process.waitFor()
+    val exitCode = process.waitFor(timeoutMinutes, TimeUnit.MINUTES)
     frameworkLogger.info("Godot process finished, exit code = $exitCode")
     return process
 }
@@ -94,7 +100,7 @@ fun startGodotWithProject(
     projectName: String,
     testWorkDirectory: File,
     solutionSourceRootDirectory: File,
-    logPath: File,
+    logPath: Path,
     dotnetSdk: String,
 ): Process {
     val godotExecutable = downloadAndExtractGodot(godotVersion)

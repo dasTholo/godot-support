@@ -1,12 +1,19 @@
 package gdscript.index
 
 import com.intellij.psi.stubs.StubIndexKey
-import com.intellij.util.indexing.ID
-import gdscript.psi.*
+import gdscript.psi.GdClassDeclTl
+import gdscript.psi.GdClassNameNmi
+import gdscript.psi.GdClassNaming
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdConstDeclTl
+import gdscript.psi.GdEnumDeclTl
+import gdscript.psi.GdInheritance
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdSignalDeclTl
 
 object Indices {
 
-    val VERSION = 16
+    val VERSION = 18
 
     val CLASS_NAMING = StubIndexKey.createIndexKey<String, GdClassNaming>("gdscript.classNaming")
     val CLASS_DECL = StubIndexKey.createIndexKey<String, GdClassDeclTl>("gdscript.classDecl")
@@ -17,7 +24,5 @@ object Indices {
     val METHOD_DECL = StubIndexKey.createIndexKey<String, GdMethodDeclTl>("gdscript.methodDecl")
     val SIGNAL_DECL = StubIndexKey.createIndexKey<String, GdSignalDeclTl>("gdscript.signal")
     val ENUM = StubIndexKey.createIndexKey<String, GdEnumDeclTl>("gdscript.enum")
-
-    val FILE_RES = ID.create<String, Void>("gdscript.fileResource")
 
 }
