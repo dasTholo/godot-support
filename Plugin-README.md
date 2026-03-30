@@ -101,6 +101,7 @@ godot-tools/
 ## TODO
 
 - [ ] **GDExtension Rust-Navigation:** Strg+Click auf GDExtension-Typen (z.B. `ActionSpaceResource`) soll zur Rust `#[derive(GodotClass)]` Struct navigieren statt zum generierten `.gd` Stub. Erfordert einen eigenen `GotoDeclarationHandler` der GDExtension class_names auf die Rust-Quellen mapped.
+- [ ] **Mehrzeilige Lambdas in Funktionsargumenten:** Der GDScript-Parser unterstützt mehrzeilige Lambdas mit trailing commas nicht korrekt (z.B. `store.connect(func(x): ..., CONNECT_ONE_SHOT)`). Godot akzeptiert das, der Plugin-Parser erzeugt Fehler. Erfordert Anpassung der Grammar (`Gd.bnf`) und Parser-Regenerierung.
 
 ## Nicht portiert (Rider-spezifisch)
 
