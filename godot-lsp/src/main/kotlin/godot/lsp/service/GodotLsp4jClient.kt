@@ -25,7 +25,7 @@ class GodotLsp4jClient(
         val workspacePath = Path(params.path)
         val expectedPath = Path(projectBasePath)
 
-        if (workspacePath != expectedPath) {
+        if (!workspacePath.startsWith(expectedPath)) {
             thisLogger().warn(
                 "Workspace path $workspacePath doesn't match project path $expectedPath, disconnecting"
             )
