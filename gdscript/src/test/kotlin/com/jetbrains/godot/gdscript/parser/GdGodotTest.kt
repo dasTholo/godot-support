@@ -47,7 +47,7 @@ class GdGodotTest : ParsingTestCase("", "gd", GdParserDefinition()) {
     @Ignore("RIDER-126458") @Test fun testgood_continue_in_lambda() = doTest(true, true)
     @Test fun testif_after_lambda() = doTest(true, true)
     @Test fun testin() = doTest(true, true)
-    @Ignore("RIDER-126458") @Test fun testis_not_operator() = doTest(true, true)
+    @Test fun testis_not_operator() = doTest(true, true)
     @Test fun testnot_in_operator() = doTest(true, true)
     @Test fun testlambda_callable() = doTest(true, true)
     @Test fun testlambda_capture_callable() = doTest(true, true)
