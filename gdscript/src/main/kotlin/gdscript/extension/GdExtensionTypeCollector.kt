@@ -123,8 +123,13 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
                     val label = item.label ?: continue
                     when (kind) {
                         LSP_KIND_METHOD -> {
+                            val hasParams = "…" in label
                             val methodName = label.removeSuffix("(…)").removeSuffix("()")
-                            methods.add(GdExtMethodInfo(methodName, emptyList(), "Variant"))
+                            val params = if (hasParams) {
+                                // Exact params unknown; generate optional ones so calls don't error
+                                (0..7).map { "p$it" to "Variant = null" }
+                            } else emptyList()
+                            methods.add(GdExtMethodInfo(methodName, params, "Variant"))
                         }
                         LSP_KIND_PROPERTY -> properties.add(GdExtPropertyInfo(label, "Variant"))
                         LSP_KIND_SIGNAL -> signals.add(GdExtSignalInfo(label))
