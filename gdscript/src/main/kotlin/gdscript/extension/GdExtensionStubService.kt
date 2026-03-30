@@ -21,7 +21,8 @@ class GdExtensionStubService(private val project: Project) {
     fun generateStubs() {
         val port = GodotLspSettings.getInstance().lspPort
         val basePath = project.basePath ?: return
-        val projectUri = "file://$basePath"
+        val godotDir = findGodotProjectDir(java.io.File(basePath))
+        val projectUri = "file://${godotDir?.absolutePath ?: basePath}"
 
         thisLogger().info("Starting GDExtension stub generation via Godot LSP on port $port")
 
@@ -90,5 +91,14 @@ class GdExtensionStubService(private val project: Project) {
         // Types that exist in the SDK will have resolveRef() succeed anyway, so even if we
         // generate a duplicate stub, the worst case is a harmless extra file.
         return builtins
+    }
+
+    private fun findGodotProjectDir(dir: java.io.File, maxDepth: Int = 3): java.io.File? {
+        if (java.io.File(dir, "project.godot").exists()) return dir
+        if (maxDepth <= 0) return null
+        dir.listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }?.forEach { sub ->
+            findGodotProjectDir(sub, maxDepth - 1)?.let { return it }
+        }
+        return null
     }
 }

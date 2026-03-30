@@ -3,6 +3,7 @@ package gdscript.extension
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import java.io.File
 
 class GdExtensionStubActivity : ProjectActivity {
 
@@ -10,15 +11,23 @@ class GdExtensionStubActivity : ProjectActivity {
         if (project.isDisposed) return
 
         val basePath = project.basePath ?: return
-        val projectGodot = java.io.File(basePath, "project.godot")
-        if (!projectGodot.exists()) return
+        val godotDir = findGodotProjectDir(File(basePath)) ?: return
 
-        thisLogger().info("Godot project detected, scheduling GDExtension stub generation")
+        thisLogger().info("Godot project detected at $godotDir, scheduling GDExtension stub generation")
 
         try {
             GdExtensionStubService.getInstance(project).generateStubs()
         } catch (e: Exception) {
             thisLogger().info("GDExtension stub generation skipped: ${e.message}")
         }
+    }
+
+    private fun findGodotProjectDir(dir: File, maxDepth: Int = 3): File? {
+        if (File(dir, "project.godot").exists()) return dir
+        if (maxDepth <= 0) return null
+        dir.listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }?.forEach { sub ->
+            findGodotProjectDir(sub, maxDepth - 1)?.let { return it }
+        }
+        return null
     }
 }
