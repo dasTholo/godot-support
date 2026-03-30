@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/JetBrains/godot-support">
-  <id>com.intellij.rider.godot.gdscript</id>
+  <id>com.intellij.rustrover.godot.gdscript</id>
   <name>GdScript</name>
   <vendor>DasTholo</vendor>
 
@@ -15,7 +15,7 @@
     <plugin id="com.intellij.modules.lang"/>
     <module name="intellij.json"/>
     <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
-    <plugin id="com.intellij.rider.godot.community"/>
+    <plugin id="com.intellij.rustrover.godot.community"/>
     <module name="intellij.platform.dap"/>
     <!-- endregion -->
   </dependencies>
@@ -44,14 +44,14 @@
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
     <backgroundPostStartupActivity implementation="gdscript.lsp.GodotLspStartOnFocusGainedActivity"/>
-    <rider.godot.community.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+    <rustrover.godot.community.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
     <projectViewNestingRulesProvider implementation="gdscript.structureView.GdFileNesting"/>
     <platform.lsp.serverSupportProvider implementation="gdscript.lsp.GodotLspServerSupportProvider"/>
     <toolWindow id="TscnScenePreviewWindowId"
                 anchor="right"
                 secondary="false"
                 canCloseContents="false"
-                icon="com.intellij.rider.plugins.godot.gdscript.icons.RiderPluginsGodotGdscriptIcons.TscnFile"
+                icon="com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons.TscnFile"
                 factoryClass="tscn.toolWindow.TscnScenePreviewWindowFactory" />
     <inlineActionHandler implementation="gdscript.refactoring.inline.GdInlineVariableActionHandler" />
 
@@ -254,7 +254,7 @@
   </extensions>
 
   <actions>
-    <action id="GdCreateFileAction" class="gdscript.action.GdCreateFileAction" icon="com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons.GDScript" >
+    <action id="GdCreateFileAction" class="gdscript.action.GdCreateFileAction" icon="com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons.GDScript" >
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile" />
     </action>
     <action id="GdAddTraitAction" class="gdscript.action.GdAddTraitAction">

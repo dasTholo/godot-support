@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/JetBrains/godot-support">
-  <id>com.intellij.rider.godot.community</id>
+  <id>com.intellij.rustrover.godot.community</id>
   <name>Godot Support (Technical)</name>
   <version>2.0.0</version>
   <vendor url="https://www.jetbrains.com">JetBrains</vendor>
@@ -17,21 +17,21 @@
   </extensions>
 
   <extensionPoints>
-    <extensionPoint name="godotProjectProvider" interface="com.jetbrains.rider.godot.community.GodotProjectProvider" dynamic="true" />
-    <extensionPoint name="editorConnectionProvider" interface="com.jetbrains.rider.godot.community.GodotEditorConnectionProvider" dynamic="true"/>
+    <extensionPoint name="godotProjectProvider" interface="com.jetbrains.rustrover.godot.community.GodotProjectProvider" dynamic="true" />
+    <extensionPoint name="editorConnectionProvider" interface="com.jetbrains.rustrover.godot.community.GodotEditorConnectionProvider" dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileType name="GdScript" implementationClass="com.jetbrains.rider.godot.community.gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
-    <fileType name="Tscn file" implementationClass="com.jetbrains.rider.godot.community.tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
-    <postStartupActivity implementation="com.jetbrains.rider.godot.community.GodotMetadataFileWatcherManager"/>
+    <fileType name="GdScript" implementationClass="com.jetbrains.rustrover.godot.community.gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
+    <fileType name="Tscn file" implementationClass="com.jetbrains.rustrover.godot.community.tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
+    <postStartupActivity implementation="com.jetbrains.rustrover.godot.community.GodotMetadataFileWatcherManager"/>
   </extensions>
 
   <actions>
-    <group id="GodotActionsToolbar" popup="true" class="com.jetbrains.rider.godot.community.actions.GodotActionsToolbar" icon="com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons.Godot">
+    <group id="GodotActionsToolbar" popup="true" class="com.jetbrains.rustrover.godot.community.actions.GodotActionsToolbar" icon="com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons.Godot">
       <add-to-group group-id="MainToolbarRight" anchor="first" />
       <action id="StartGodotEditorAction"
-              class="com.jetbrains.rider.godot.community.actions.StartGodotEditorAction"
+              class="com.jetbrains.rustrover.godot.community.actions.StartGodotEditorAction"
               icon="AllIcons.Actions.Execute">
       </action>
     </group>

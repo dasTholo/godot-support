@@ -21,7 +21,7 @@ then open any .gd file. The plugin connects automatically.</p>
 ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.rider.godot.community</depends>
+    <depends>com.intellij.rustrover.godot.community</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <platform.lsp.serverSupportProvider
