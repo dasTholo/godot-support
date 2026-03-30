@@ -48,9 +48,10 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
             RegexOption.MULTILINE
         )
 
-        // Matches #[func] or #[func(rename=...)] fn name(params) -> ReturnType
+        // Matches #[func] or #[func(rename=...)] fn name(params) with optional -> return
+        // Group 1: func attribute content, Group 2: method name, Group 3: params, Group 4: raw return type region
         private val FUNC_FULL_PATTERN = Regex(
-            """#\[func(?:\(([^)]*)\))?\]\s*(?:pub\s+)?fn\s+(\w+)\s*\(([^)]*)\)(?:\s*->\s*([^\s{]+(?:<[^>]+>)?))?""",
+            """#\[func(?:\(([^)]*)\))?\]\s*(?:pub\s+)?fn\s+(\w+)\s*\(([^)]*)\)(?:\s*->\s*(.+?))?(?:\s*\{|\s*$)""",
             RegexOption.MULTILINE
         )
 
