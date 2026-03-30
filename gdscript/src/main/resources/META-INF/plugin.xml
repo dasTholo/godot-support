@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/JetBrains/godot-support">
   <id>com.intellij.rider.godot.gdscript</id>
   <name>GdScript</name>
-  <vendor>JetBrains</vendor>
+  <vendor>DasTholo</vendor>
 
   <description>
     GdScript2 language plugin for Godot 4.0+.
@@ -39,6 +39,7 @@
     <automaticRenamerFactory implementation="gdscript.codeInsight.renamer.GdFileAutomaticRenamerFactory" />
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
+    <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
     <projectViewNestingRulesProvider implementation="gdscript.structureView.GdFileNesting"/>
     <toolWindow id="TscnScenePreviewWindowId"
                 anchor="right"
@@ -224,7 +225,13 @@
     <action id="GdAddTraitAction" class="gdscript.action.GdAddTraitAction">
       <add-to-group group-id="GenerateGroup" anchor="first" />
     </action>
+    <action id="GdExtensionRefreshAction" class="gdscript.extension.GdExtensionRefreshAction"
+            text="Refresh GDExtension Types" description="Regenerate GDExtension type stubs from Godot LSP">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
   </actions>
+
+  <depends optional="true" config-file="gdext-stub-support.xml">godot.lsp</depends>
 
   <resource-bundle>messages.GdScriptBundle</resource-bundle>
 
