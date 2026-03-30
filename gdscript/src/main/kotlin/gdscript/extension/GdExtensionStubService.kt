@@ -78,12 +78,16 @@ class GdExtensionStubService(private val project: Project) {
             "PackedVector4Array")
 
         // Collect class_name from SDK stub files via the GdClassNamingIndex
-        try {
-            val sdkTypes = gdscript.index.impl.GdClassNamingIndex.INSTANCE.getAllKeys(project)
-            builtins.addAll(sdkTypes)
-            thisLogger().info("Found ${sdkTypes.size} types from SDK index")
-        } catch (e: Exception) {
-            thisLogger().warn("Could not read SDK index: ${e.message}")
+        if (!com.intellij.openapi.project.DumbService.isDumb(project)) {
+            try {
+                val sdkTypes = gdscript.index.impl.GdClassNamingIndex.INSTANCE.getAllKeys(project)
+                builtins.addAll(sdkTypes)
+                thisLogger().info("Found ${sdkTypes.size} types from SDK index")
+            } catch (e: Exception) {
+                thisLogger().warn("Could not read SDK index: ${e.message}")
+            }
+        } else {
+            thisLogger().warn("Index not ready, cannot filter SDK types")
         }
 
         return builtins

@@ -1,6 +1,7 @@
 package gdscript.extension
 
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import java.io.File
@@ -15,10 +16,14 @@ class GdExtensionStubActivity : ProjectActivity {
 
         thisLogger().info("Godot project detected at $godotDir, scheduling GDExtension stub generation")
 
-        try {
-            GdExtensionStubService.getInstance(project).generateStubs()
-        } catch (e: Exception) {
-            thisLogger().info("GDExtension stub generation skipped: ${e.message}")
+        // Wait for indexing to complete so we can read SDK types from the index
+        DumbService.getInstance(project).runWhenSmart {
+            if (project.isDisposed) return@runWhenSmart
+            try {
+                GdExtensionStubService.getInstance(project).generateStubs()
+            } catch (e: Exception) {
+                thisLogger().info("GDExtension stub generation skipped: ${e.message}")
+            }
         }
     }
 
