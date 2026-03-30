@@ -46,6 +46,7 @@ val buildConfiguration: String by project
 
 dependencies {
     compileOnly(":rider-godot-community")
+    compileOnly(":godot-lsp")
 
     intellijPlatform {
         intellijIdea(libs.versions.ideaSdk) { useInstaller = false }
