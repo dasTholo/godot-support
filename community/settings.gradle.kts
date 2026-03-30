@@ -1,1 +1,1 @@
-rootProject.name = "rider-godot-community"
+rootProject.name = "rustrover-godot-community"

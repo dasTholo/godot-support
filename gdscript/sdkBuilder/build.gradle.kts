@@ -72,7 +72,7 @@ publishing {
                 extension = "tar.xz.sha512"
                 classifier = null
             }
-            groupId = "rider-gdscript.sdkBuilder"
+            groupId = "rustrover-gdscript.sdkBuilder"
             artifactId = resultingSdkBaseName
             version = fullVersion
         }

@@ -1,3 +1,3 @@
-- name: lib/rider-plugins-godot-gdscript.jar
+- name: lib/rustrover-plugins-godot-gdscript.jar
   modules:
-  - name: intellij.rider.plugins.godot.gdscript
+  - name: intellij.rustrover.plugins.godot.gdscript

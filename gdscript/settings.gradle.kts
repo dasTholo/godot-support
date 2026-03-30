@@ -1,4 +1,4 @@
-rootProject.name = "rider-gdscript"
+rootProject.name = "rustrover-gdscript"
 
 includeBuild("../community")
 includeBuild("../godot-lsp")

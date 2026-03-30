@@ -24,7 +24,7 @@ dependencies {
     intellijPlatform {
         rustRover(libs.versions.ideaSdk) { useInstaller = false }
         jetbrainsRuntime()
-        localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
+        localPlugin(repoRoot.resolve("community/build/distributions/rustrover-godot-community.zip"))
     }
 }
 

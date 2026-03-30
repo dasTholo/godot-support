@@ -47,7 +47,7 @@ repositories {
 val buildConfiguration: String by project
 
 dependencies {
-    compileOnly(":rider-godot-community")
+    compileOnly(":rustrover-godot-community")
     compileOnly(":godot-lsp")
 
     intellijPlatform {
@@ -55,7 +55,7 @@ dependencies {
         // rider(libs.versions.riderSdk, useInstaller = false) // instead of touching this, just use runRider gradle task
         jetbrainsRuntime()
         // you need to compile the community plugin in advance, or this would fail. I haven't found a workaround
-        localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
+        localPlugin(repoRoot.resolve("community/build/distributions/rustrover-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
 
         bundledPlugin("com.intellij.modules.json")
@@ -146,8 +146,8 @@ tasks {
     }
 
     // run it to start Rider from SDK
-    val runRider by intellijPlatformTesting.runIde.registering {
-        type = IntelliJPlatformType.Rider
+    val runRustRover by intellijPlatformTesting.runIde.registering {
+        type = IntelliJPlatformType.RustRover
         version = libs.versions.riderSdk
         useInstaller = false
         task {
@@ -158,7 +158,7 @@ tasks {
             val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
 
             // sandboxPluginsDirectory is not adequate when calling runRider
-            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRider", pluginName, "sdk")
+            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRustRover", pluginName, "sdk")
             logger.lifecycle("Copying SDK from $sdkDir to $target2")
             project.copy {
                 from(sdkDir)
