@@ -60,6 +60,11 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
             RegexOption.MULTILINE
         )
 
+        private val SIGNAL_PATTERN = Regex(
+            """#\[signal\]\s*fn\s+(\w+)\s*\(([^)]*)\)""",
+            RegexOption.MULTILINE
+        )
+
         private val RUST_TO_GDSCRIPT = mapOf(
             "GString" to "String",
             "StringName" to "String",
@@ -275,6 +280,41 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
         }
 
         return BASE_CLASS_PATTERN.find(content)?.groupValues?.get(1)
+    }
+
+    fun collectSignals(className: String): List<RustSignalInfo> {
+        val mapping = buildClassNameMapping()
+        val location = mapping[className] ?: return emptyList()
+
+        val content = try {
+            String(location.virtualFile.contentsToByteArray(), Charsets.UTF_8)
+        } catch (_: Exception) {
+            return emptyList()
+        }
+
+        val signals = mutableListOf<RustSignalInfo>()
+        SIGNAL_PATTERN.findAll(content).forEach { match ->
+            val signalName = match.groupValues[1]
+            val paramsStr = match.groupValues[2].trim()
+
+            val params = mutableListOf<RustMethodParam>()
+            if (paramsStr.isNotEmpty()) {
+                val paramParts = splitRustParams(paramsStr)
+                for (part in paramParts) {
+                    val trimmed = part.trim()
+                    val colonIdx = trimmed.indexOf(':')
+                    if (colonIdx > 0) {
+                        val paramName = trimmed.substring(0, colonIdx).trim()
+                        val paramType = trimmed.substring(colonIdx + 1).trim()
+                        params.add(RustMethodParam(paramName, mapRustType(paramType, className)))
+                    }
+                }
+            }
+
+            signals.add(RustSignalInfo(signalName, params))
+        }
+
+        return signals
     }
 
     override fun dispose() {}
