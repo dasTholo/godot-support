@@ -29,7 +29,8 @@ data class GdExtTypeInfo(
     val inherits: String,
     val methods: List<GdExtMethodInfo>,
     val properties: List<GdExtPropertyInfo>,
-    val signals: List<GdExtSignalInfo>
+    val signals: List<GdExtSignalInfo>,
+    val staticMethods: Set<String> = emptySet()
 )
 
 class GdExtensionTypeCollector(private val project: Project, private val godotProjectPath: String) {
