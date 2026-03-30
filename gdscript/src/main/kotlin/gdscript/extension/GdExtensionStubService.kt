@@ -42,13 +42,16 @@ class GdExtensionStubService(private val project: Project) {
             return
         }
 
-        thisLogger().info("Found ${extensionTypes.size} potential GDExtension types, generating stubs...")
+        thisLogger().info("Found ${extensionTypes.size} potential GDExtension types, collecting details...")
 
-        // Step 3: Create basic stubs for each extension type
-        // We generate minimal stubs with class_name so the indexer can resolve them.
-        // Full method details would require per-type LSP queries which is too slow.
-        val typeInfos = extensionTypes.map { typeName ->
-            GdExtTypeInfo(typeName, "RefCounted", emptyList(), emptyList(), emptyList())
+        // Step 3: Collect details for each extension type via LSP
+        val typeInfos = extensionTypes.mapNotNull { typeName ->
+            try {
+                collector.collectTypeDetails(typeName)
+            } catch (e: Exception) {
+                thisLogger().warn("Failed to collect details for $typeName: ${e.message}")
+                null
+            }
         }
 
         // Step 4: Write stub files
