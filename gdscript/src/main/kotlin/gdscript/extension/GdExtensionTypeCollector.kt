@@ -1,8 +1,13 @@
 package gdscript.extension
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.Project
+import com.intellij.platform.lsp.api.LspServer
+import com.intellij.platform.lsp.api.LspServerManager
+import com.intellij.platform.lsp.api.LspServerState
+import godot.lsp.service.GodotLspServerSupportProvider
+import org.eclipse.lsp4j.*
 
 data class GdExtMethodInfo(
     val name: String,
@@ -28,10 +33,10 @@ data class GdExtTypeInfo(
 )
 
 /**
- * Queries the Godot LSP for all available types, then fetches method/property
- * details for types not already known to the SDK.
+ * Queries the Godot LSP (via the existing godot-lsp plugin connection) for all
+ * available types, then fetches method/property details for GDExtension types.
  */
-class GdExtensionTypeCollector(private val client: GdExtensionLspClient, private val godotProjectPath: String) {
+class GdExtensionTypeCollector(private val project: Project, private val godotProjectPath: String) {
 
     private val probeUri = "file://$godotProjectPath/_gdext_probe.gd"
 
@@ -42,73 +47,98 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient, private
         private const val LSP_KIND_CLASS = 7
     }
 
+    private fun getLspServer(): LspServer? {
+        val servers = LspServerManager.getInstance(project)
+            .getServersForProvider(GodotLspServerSupportProvider::class.java)
+        return servers.firstOrNull { it.state == LspServerState.Running }
+    }
+
     /**
      * Returns all type names available via LSP completion in a type-hint position.
      */
     fun collectAllTypeNames(): List<String> {
-        openDocument("extends Node\nvar _x: ")
+        val server = getLspServer()
+        if (server == null) {
+            thisLogger().warn("No running Godot LSP server found")
+            return emptyList()
+        }
 
-        val result = client.sendRequest("textDocument/completion", mapOf(
-            "textDocument" to mapOf("uri" to probeUri),
-            "position" to mapOf("line" to 1, "character" to 8)
-        ))
+        openDocument(server, "extends Node\nvar _x: ")
+
+        val result = server.sendRequestSync(5000) { ls ->
+            ls.textDocumentService.completion(CompletionParams(
+                TextDocumentIdentifier(probeUri),
+                Position(1, 8)
+            ))
+        }
+
+        closeDocument(server)
 
         if (result == null) {
             thisLogger().warn("LSP completion returned null")
             return emptyList()
         }
 
-        thisLogger().info("LSP completion result type: ${result.javaClass.simpleName}, isArray=${result.isJsonArray}, isObject=${result.isJsonObject}")
+        val items = when {
+            result.isLeft -> result.left
+            result.isRight -> result.right.items
+            else -> emptyList()
+        }
 
-        val items = extractCompletionItems(result)
         thisLogger().info("Extracted ${items.size} completion items")
 
         if (items.isNotEmpty()) {
-            val kinds = items.mapNotNull { it.get("kind")?.asInt }.distinct().sorted()
+            val kinds = items.mapNotNull { it.kind?.value }.distinct().sorted()
             thisLogger().info("Completion item kinds present: $kinds")
-            val classItems = items.filter { it.get("kind")?.asInt == LSP_KIND_CLASS }
-            thisLogger().info("Found ${classItems.size} class items (kind=$LSP_KIND_CLASS)")
-            if (classItems.isEmpty() && items.size <= 10) {
-                items.forEach { thisLogger().info("  item: label=${it.get("label")}, kind=${it.get("kind")}") }
-            }
         }
 
-        return items
-            .filter { it.get("kind")?.asInt == LSP_KIND_CLASS }
-            .map { it.get("label").asString }
+        val classItems = items.filter { it.kind?.value == LSP_KIND_CLASS }
+        thisLogger().info("Found ${classItems.size} class items (kind=$LSP_KIND_CLASS)")
+
+        return classItems.map { it.label }
     }
 
     /**
      * Collects full type info (methods, properties, signals) for a given type name.
-     * Uses completion after an instance to get members, and hover to get method signatures.
      */
     fun collectTypeDetails(typeName: String): GdExtTypeInfo {
-        // Get inheritance via hover on the type itself
-        val inherits = getInheritance(typeName)
+        val server = getLspServer() ?: return GdExtTypeInfo(typeName, "RefCounted", emptyList(), emptyList(), emptyList())
 
-        // Open a document with an instance of the type and request completion after "._x."
+        // Get inheritance via hover
+        val inherits = getInheritance(server, typeName)
+
+        // Open doc with instance and request completion on members
         val doc = "extends Node\nvar _x := $typeName.new()\nfunc _r():\n\t_x."
-        openDocument(doc)
+        openDocument(server, doc)
 
-        val result = client.sendRequest("textDocument/completion", mapOf(
-            "textDocument" to mapOf("uri" to probeUri),
-            "position" to mapOf("line" to 3, "character" to 4)
-        )) ?: return GdExtTypeInfo(typeName, inherits, emptyList(), emptyList(), emptyList())
+        val result = server.sendRequestSync(5000) { ls ->
+            ls.textDocumentService.completion(CompletionParams(
+                TextDocumentIdentifier(probeUri),
+                Position(3, 4)
+            ))
+        }
 
-        val items = extractCompletionItems(result)
+        closeDocument(server)
+
+        val items = when {
+            result == null -> emptyList()
+            result.isLeft -> result.left
+            result.isRight -> result.right.items
+            else -> emptyList()
+        }
 
         val methods = mutableListOf<GdExtMethodInfo>()
         val properties = mutableListOf<GdExtPropertyInfo>()
         val signals = mutableListOf<GdExtSignalInfo>()
 
         for (item in items) {
-            val kind = item.get("kind")?.asInt ?: continue
-            val label = item.get("label")?.asString ?: continue
+            val kind = item.kind?.value ?: continue
+            val label = item.label ?: continue
 
             when (kind) {
                 LSP_KIND_METHOD -> {
                     val methodName = label.removeSuffix("(…)").removeSuffix("()")
-                    val sig = getMethodSignature(typeName, methodName)
+                    val sig = getMethodSignature(server, typeName, methodName)
                     if (sig != null) {
                         methods.add(sig)
                     }
@@ -125,40 +155,36 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient, private
         return GdExtTypeInfo(typeName, inherits, methods, properties, signals)
     }
 
-    private fun getInheritance(typeName: String): String {
-        val doc = "extends Node\nvar _x: $typeName"
-        openDocument(doc)
+    private fun getInheritance(server: LspServer, typeName: String): String {
+        openDocument(server, "extends Node\nvar _x: $typeName")
 
-        val result = client.sendRequest("textDocument/hover", mapOf(
-            "textDocument" to mapOf("uri" to probeUri),
-            "position" to mapOf("line" to 1, "character" to 10)
-        ))
+        val result = server.sendRequestSync(5000) { ls ->
+            ls.textDocumentService.hover(HoverParams(
+                TextDocumentIdentifier(probeUri),
+                Position(1, 10)
+            ))
+        }
 
-        if (result == null || result.isJsonNull) return "RefCounted"
+        closeDocument(server)
 
-        val contents = result.asJsonObject.getAsJsonObject("contents")
-        val value = contents?.get("value")?.asString ?: return "RefCounted"
-
-        // Format: "\t<Native> class TypeName extends ParentType\n\n\n\n"
+        val value = result?.contents?.right?.value ?: return "RefCounted"
         val extendsMatch = Regex("extends\\s+(\\w+)").find(value)
         return extendsMatch?.groupValues?.get(1) ?: "RefCounted"
     }
 
-    private fun getMethodSignature(typeName: String, methodName: String): GdExtMethodInfo? {
-        val doc = "extends Node\nvar _x := $typeName.new()\nfunc _r():\n\t_x.$methodName()"
-        openDocument(doc)
+    private fun getMethodSignature(server: LspServer, typeName: String, methodName: String): GdExtMethodInfo? {
+        openDocument(server, "extends Node\nvar _x := $typeName.new()\nfunc _r():\n\t_x.$methodName()")
 
-        val result = client.sendRequest("textDocument/hover", mapOf(
-            "textDocument" to mapOf("uri" to probeUri),
-            "position" to mapOf("line" to 3, "character" to 5)
-        ))
+        val result = server.sendRequestSync(5000) { ls ->
+            ls.textDocumentService.hover(HoverParams(
+                TextDocumentIdentifier(probeUri),
+                Position(3, 5)
+            ))
+        }
 
-        if (result == null || result.isJsonNull) return null
+        closeDocument(server)
 
-        val contents = result.asJsonObject.getAsJsonObject("contents")
-        val value = contents?.get("value")?.asString ?: return null
-
-        // Format: "\tfunc TypeName.method_name(arg: Type, arg2: Type2) -> ReturnType\n\n"
+        val value = result?.contents?.right?.value ?: return null
         return parseMethodSignature(methodName, value)
     }
 
@@ -183,34 +209,28 @@ class GdExtensionTypeCollector(private val client: GdExtensionLspClient, private
         return GdExtMethodInfo(methodName, params, returnType)
     }
 
-    private fun openDocument(text: String) {
-        // Close previous document
-        client.sendNotification("textDocument/didClose", mapOf(
-            "textDocument" to mapOf("uri" to probeUri)
-        ))
+    private fun openDocument(server: LspServer, text: String) {
+        server.sendNotification { ls ->
+            ls.textDocumentService.didClose(DidCloseTextDocumentParams(
+                TextDocumentIdentifier(probeUri)
+            ))
+        }
 
-        // Open new document
-        client.sendNotification("textDocument/didOpen", mapOf(
-            "textDocument" to mapOf(
-                "uri" to probeUri,
-                "languageId" to "gdscript",
-                "version" to 1,
-                "text" to text
-            )
-        ))
+        server.sendNotification { ls ->
+            ls.textDocumentService.didOpen(DidOpenTextDocumentParams(
+                TextDocumentItem(probeUri, "gdscript", 1, text)
+            ))
+        }
 
-        // Small delay to let the server process
+        // Let the server process
         Thread.sleep(200)
     }
 
-    private fun extractCompletionItems(result: com.google.gson.JsonElement): List<JsonObject> {
-        return when {
-            result.isJsonArray -> result.asJsonArray.map { it.asJsonObject }
-            result.isJsonObject -> {
-                val items = result.asJsonObject.getAsJsonArray("items")
-                items?.map { it.asJsonObject } ?: emptyList()
-            }
-            else -> emptyList()
+    private fun closeDocument(server: LspServer) {
+        server.sendNotification { ls ->
+            ls.textDocumentService.didClose(DidCloseTextDocumentParams(
+                TextDocumentIdentifier(probeUri)
+            ))
         }
     }
 }
