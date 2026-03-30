@@ -21,14 +21,9 @@ then open any .gd file. The plugin connects automatically.</p>
 ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.rider.godot.community</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileType
-            name="GDScript"
-            implementationClass="godot.lsp.GdFileType"
-            language="GdScript"
-            extensions="gd"/>
-
         <platform.lsp.serverSupportProvider
             implementation="godot.lsp.service.GodotLspServerSupportProvider"/>
 

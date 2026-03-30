@@ -18,10 +18,13 @@ kotlin {
     }
 }
 
+val repoRoot = projectDir.parentFile!!
+
 dependencies {
     intellijPlatform {
         rustRover(libs.versions.ideaSdk) { useInstaller = false }
         jetbrainsRuntime()
+        localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
     }
 }
 
