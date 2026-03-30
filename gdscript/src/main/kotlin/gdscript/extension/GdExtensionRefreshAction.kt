@@ -12,7 +12,7 @@ class GdExtensionRefreshAction : AnAction("Refresh GDExtension Types") {
         val project = e.project ?: return
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(
-            project, "Refreshing GDExtension types...", false
+            project, "Refreshing GDExtension types...", true
         ) {
             override fun run(indicator: ProgressIndicator) {
                 GdExtensionStubService.getInstance(project).generateStubs()
