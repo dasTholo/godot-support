@@ -79,15 +79,31 @@ class GdClassMemberReference : PsiReferenceBase<GdRefIdRef>, HighlightedReferenc
                     val parts = name.split('.')
                     if (parts.isEmpty()) return false
                     var parent: PsiElement = GdClassUtil.getOwningClassElement(element)
-                    // Start from file scope
                     parent = parent as? GdFile ?: element.containingFile
-                    var current = PsiTreeUtil.getStubChildrenOfTypeAsList(parent, GdClassDeclTl::class.java)
+                    var current: PsiElement? = PsiTreeUtil.getStubChildrenOfTypeAsList(parent, GdClassDeclTl::class.java)
                         .firstOrNull { it.name == parts[0] }
+                    if (current == null) {
+                        current = PsiTreeUtil.getStubChildrenOfTypeAsList(parent, GdEnumDeclTl::class.java)
+                            .firstOrNull { it.name == parts[0] }
+                        if (current != null) return parts.size == 1
+                    }
                     var i = 1
-                    while (current != null && i < parts.size) {
-                        current = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdClassDeclTl::class.java)
+                    while (current != null && current is GdClassDeclTl && i < parts.size) {
+                        val nextClass = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdClassDeclTl::class.java)
                             .firstOrNull { it.name == parts[i] }
-                        i++
+                        if (nextClass != null) {
+                            current = nextClass
+                            i++
+                            continue
+                        }
+                        val nextEnum = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdEnumDeclTl::class.java)
+                            .firstOrNull { it.name == parts[i] }
+                        if (nextEnum != null) {
+                            current = nextEnum
+                            i++
+                            break
+                        }
+                        break
                     }
                     return current != null && i == parts.size
                 }
@@ -149,6 +165,7 @@ class GdClassMemberReference : PsiReferenceBase<GdRefIdRef>, HighlightedReferenc
                 if (qualifierExpr != null && qualifierQualifiesAsClass(qualifierExpr)) {
                     when (resolved) {
                         is GdClassDeclTl -> { /* ok */ }
+                        is GdEnumDeclTl -> { /* ok — enums are static-like */ }
                         is GdMethodDeclTl -> if (!resolved.isStatic) return@Resolver null
                         is GdClassVarDeclTl -> if (!resolved.isStatic) return@Resolver null
                     }
@@ -166,16 +183,18 @@ class GdClassMemberReference : PsiReferenceBase<GdRefIdRef>, HighlightedReferenc
                             if (isStaticAccess == true && !resolved.isStatic) return@Resolver null
                         }
                         is GdClassDeclTl -> {
-                            // Accessing a class via instance (obj.ClassName) is invalid
+                            if (isStaticAccess == false) return@Resolver null
+                        }
+                        is GdEnumDeclTl -> {
                             if (isStaticAccess == false) return@Resolver null
                         }
                     }
 
-                    // Allow accessing inner classes via their direct parent class (e.g., A1.B1)
-                    if (resolved is GdClassDeclTl) {
+                    // Allow accessing inner classes and inner enums via their direct parent class
+                    if (resolved is GdClassDeclTl || resolved is GdEnumDeclTl) {
                         val enclosing = PsiTreeUtil.getStubOrPsiParentOfType(resolved, GdClassDeclTl::class.java)
                         if (enclosing != null && enclosing == targetClassDecl) {
-                            // OK: accessing inner class on its parent
+                            // OK: accessing inner class/enum on its parent
                         } else if (owner is GdClassDeclTl && owner != targetClassDecl) {
                             return@Resolver null
                         }

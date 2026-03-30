@@ -30,6 +30,7 @@ class GdParserTest : ParsingTestCase("", "gd", GdParserDefinition()) {
     @Test fun testEnumNamed() = doTest(true)
     @Test fun testFunctionSimple() = doTest(true)
     @Test fun testMethodVararg() = doTest(true)
+    @Test fun testMethodEllipsisVararg() = doTest(true)
     @Test fun testMethodArrayReturnType() = doTest(true)
     @Test fun testClass() = doTest(true)
     @Test fun testCommentWithinCode() = doTest(true)

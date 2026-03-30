@@ -135,7 +135,7 @@ methodDecl_tl ::= methodSpecifier* FUNC methodId_nmi LRBR paramList? RRBR return
 methodSpecifier ::= STATIC | VARARG | MASTER | PUPPET | REMOTE | REMOTESYNC | MASTERSYNC | PUPPETSYNC
 methodId_nmi ::= identifierEx
 paramList ::= param (COMMA param)* COMMA? { pin=1 recoverWhile=argList_r }
-param ::= VAR? var_nmi typed? (assignTyped expr)? {methods=[getReturnType]}
+param ::= VAR? ELLIPSIS? var_nmi typed? (assignTyped expr)? {methods=[getReturnType isVararg]}
 returnHint ::= RET returnHintVal
 returnHintVal ::= typedVal | VOID // typeHint_nm | VOID
 argList ::= argExpr (COMMA argExpr)* COMMA? { pin=1 recoverWhile=argList_r }

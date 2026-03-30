@@ -73,6 +73,8 @@ class GdRefIdAnnotator : Annotator {
                     else GdHighlighterColors.CLASS_TYPE
                 }
 
+                is GdEnumDeclTl -> GdHighlighterColors.CLASS_TYPE
+
                 null -> run {
                     if (element.text == "new"
                         || GdClassMemberUtil.calledUpon(element)?.returnType == "Dictionary"

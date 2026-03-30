@@ -163,15 +163,22 @@ object GdClassMemberUtil {
             }
 
             // If qualifier resolves to a named enum, expose its values for member lookup (e.g., _Anim.FLOOR)
-            findDeclaration(calledOnPsi!!)?.let { decl ->
-                if (decl is GdEnumDeclTl) {
-                    if (searchFor != null) {
-                        val localVal = decl.enumValueList.find { eval -> eval.enumValueNmi.name == searchFor }
-                        if (localVal != null) return arrayOf(localVal)
-                    }
-                    result.addAll(decl.enumValueList)
-                    if (searchFor == null) return result.toTypedArray()
+            // Try direct findDeclaration first, then fall back to reference resolution for compound qualifiers (e.g., Class.Enum.VALUE)
+            var qualifierDecl: Any? = findDeclaration(calledOnPsi!!)
+            if (qualifierDecl == null) {
+                val lastRef = PsiTreeUtil.collectElementsOfType(calledOnPsi, GdRefIdRef::class.java).lastOrNull()
+                if (lastRef != null) {
+                    val ref = lastRef.references.firstOrNull() as? gdscript.reference.GdClassMemberReference
+                    qualifierDecl = ref?.resolveDeclaration()
                 }
+            }
+            if (qualifierDecl is GdEnumDeclTl) {
+                if (searchFor != null) {
+                    val localVal = qualifierDecl.enumValueList.find { eval -> eval.enumValueNmi.name == searchFor }
+                    if (localVal != null) return arrayOf(localVal)
+                }
+                result.addAll(qualifierDecl.enumValueList)
+                if (searchFor == null) return result.toTypedArray()
             }
 
             parent = GdClassUtil.getClassIdElement(calledOn, element, project)

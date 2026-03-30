@@ -1237,7 +1237,11 @@ class GdLexer implements FlexLexer {
           // fall through
           case 132: break;
           case 43:
-            { return dedentRoot(GdTypes.DOTDOT);
+            { if (zzMarkedPos < zzBuffer.length() && zzBuffer.charAt(zzMarkedPos) == '.') {
+                zzMarkedPos++;
+                return dedentRoot(GdTypes.ELLIPSIS);
+              }
+              return dedentRoot(GdTypes.DOTDOT);
             }
           // fall through
           case 133: break;

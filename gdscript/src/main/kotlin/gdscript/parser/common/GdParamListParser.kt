@@ -9,11 +9,11 @@ object GdParamListParser : GdBaseParser {
 
     override fun parse(b: GdPsiBuilder, l: Int, optional: Boolean): Boolean {
         if (!b.recursionGuard(l, "ParamList")) return false
-        if (!b.nextTokenIs(VAR) && !GdLiteralExParser.checkExtendedRefId(b)) return optional
+        if (!b.nextTokenIs(VAR) && !b.nextTokenIs(ELLIPSIS) && !GdLiteralExParser.checkExtendedRefId(b)) return optional
         var ok = true
         val paramList = b.mark()
 
-        while (ok && (b.nextTokenIs(VAR) || GdLiteralExParser.checkExtendedRefId(b))) {
+        while (ok && (b.nextTokenIs(VAR) || b.nextTokenIs(ELLIPSIS) || GdLiteralExParser.checkExtendedRefId(b))) {
             ok = param(b, l + 1)
             if (!b.passToken(COMMA)) break
         }
@@ -29,6 +29,7 @@ object GdParamListParser : GdBaseParser {
         var ok = true
 
         b.passToken(VAR)
+        b.passToken(ELLIPSIS)
         ok = ok && GdLiteralExParser.parseExtendedRefId(b, VAR_NMI)
         ok = ok && GdTypedParser.parseWithAssignTypedAndExpr(b, l + 1, true)
 

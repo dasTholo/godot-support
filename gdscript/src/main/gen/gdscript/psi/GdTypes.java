@@ -140,6 +140,7 @@ public interface GdTypes {
   IElementType DIV = new GdTokenType("DIV");
   IElementType DOT = new GdTokenType("DOT");
   IElementType DOTDOT = new GdTokenType("DOTDOT");
+  IElementType ELLIPSIS = new GdTokenType("ELLIPSIS");
   IElementType ELIF = new GdTokenType("ELIF");
   IElementType ELSE = new GdTokenType("ELSE");
   IElementType ENUM = new GdTokenType("ENUM");

@@ -18,7 +18,12 @@ object PsiGdMethodDeclUtil {
             return stub.isVariadic()
         }
 
-        return element.methodSpecifierList.any { it.text == GdKeywords.VARARG }
+        if (element.methodSpecifierList.any { it.text == GdKeywords.VARARG }) return true
+
+        val params = element.paramList?.paramList ?: return false
+        return params.any { param ->
+            param.node.getChildren(null).any { it.elementType == GdTypes.ELLIPSIS }
+        }
     }
 
     fun getReturnType(element: GdMethodDeclTl): String {

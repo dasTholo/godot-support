@@ -250,6 +250,7 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     "^"            { return dedentRoot(GdTypes.XOR); }
     "~"            { return dedentRoot(GdTypes.NOT); }
     "_"            { return dedentRoot(GdTypes.UNDER); }
+    "..."          { return dedentRoot(GdTypes.ELLIPSIS); }
     ".."           { return dedentRoot(GdTypes.DOTDOT); }
     "\\"           { newLineProcessed = true; ignoreIndent = true; return GdTypes.BACKSLASH; }
 
