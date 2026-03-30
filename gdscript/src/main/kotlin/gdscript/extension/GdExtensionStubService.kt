@@ -77,17 +77,21 @@ class GdExtensionStubService(private val project: Project) {
             "PackedVector2Array", "PackedVector3Array", "PackedColorArray",
             "PackedVector4Array")
 
-        // Collect class_name from SDK stub files via the GdClassNamingIndex
-        if (!com.intellij.openapi.project.DumbService.isDumb(project)) {
-            try {
-                val sdkTypes = gdscript.index.impl.GdClassNamingIndex.INSTANCE.getAllKeys(project)
-                builtins.addAll(sdkTypes)
-                thisLogger().info("Found ${sdkTypes.size} types from SDK index")
-            } catch (e: Exception) {
-                thisLogger().warn("Could not read SDK index: ${e.message}")
-            }
-        } else {
-            thisLogger().warn("Index not ready, cannot filter SDK types")
+        // Collect class names from SDK .gd files on disk (not the index, which includes our stubs)
+        try {
+            val godotDir = findGodotProjectDir(java.io.File(project.basePath ?: ""))
+            val projectFile = godotDir?.resolve("project.godot")
+            val content = projectFile?.readText() ?: ""
+            val versionMatch = "config/features=PackedStringArray\\(.*\"(\\d\\.\\d)\".*\\)".toRegex().find(content)
+            val version = versionMatch?.groupValues?.get(1) ?: "4.4"
+
+            val sdkPath = gdscript.library.GdLibraryManager.extractSdkIfNeeded(version)
+            val sdkFiles = sdkPath.toFile().listFiles { f -> f.extension == "gd" } ?: emptyArray()
+            val sdkTypes = sdkFiles.map { it.nameWithoutExtension }.toSet()
+            builtins.addAll(sdkTypes)
+            thisLogger().info("Found ${sdkTypes.size} SDK types from $sdkPath")
+        } catch (e: Exception) {
+            thisLogger().warn("Could not read SDK files: ${e.message}")
         }
 
         return builtins
