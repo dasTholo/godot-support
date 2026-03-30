@@ -50,7 +50,22 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
     private fun getLspServer(): LspServer? {
         val servers = LspServerManager.getInstance(project)
             .getServersForProvider(GodotLspServerSupportProvider::class.java)
-        return servers.firstOrNull { it.state == LspServerState.Running }
+        val server = servers.firstOrNull { it.state == LspServerState.Running }
+        if (server != null) {
+            thisLogger().info("Found running Godot LSP server, state=${server.state}")
+        }
+        return server
+    }
+
+    private fun getRawServer(server: LspServer): org.eclipse.lsp4j.services.LanguageServer? {
+        return try {
+            val impl = server as? com.intellij.platform.lsp.impl.LspServerImpl ?: return null
+            val method = impl.javaClass.getMethod("getLsp4jServer\$intellij_platform_lsp_impl")
+            method.invoke(impl) as? org.eclipse.lsp4j.services.LanguageServer
+        } catch (e: Exception) {
+            thisLogger().warn("Cannot access raw LSP server: ${e.message}")
+            null
+        }
     }
 
     /**
@@ -63,39 +78,61 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
             return emptyList()
         }
 
-        openDocument(server, "extends Node\nvar _x: ")
-
-        val result = server.sendRequestSync(5000) { ls ->
-            ls.textDocumentService.completion(CompletionParams(
-                TextDocumentIdentifier(probeUri),
-                Position(1, 8)
-            ))
-        }
-
-        closeDocument(server)
-
-        if (result == null) {
-            thisLogger().warn("LSP completion returned null")
+        val rawServer = getRawServer(server)
+        if (rawServer == null) {
+            thisLogger().warn("Cannot access raw LSP server")
             return emptyList()
         }
 
-        val items = when {
-            result.isLeft -> result.left
-            result.isRight -> result.right.items
-            else -> emptyList()
+        // Open probe document - use "extends " which triggers class completion in Godot LSP
+        val text = "extends "
+        val file = java.io.File(godotProjectPath, "_gdext_probe.gd")
+        file.writeText(text)
+
+        try {
+            rawServer.textDocumentService.didOpen(DidOpenTextDocumentParams(
+                TextDocumentItem(probeUri, "gdscript", 1, text)
+            ))
+
+            Thread.sleep(500)
+
+            val future = rawServer.textDocumentService.completion(CompletionParams(
+                TextDocumentIdentifier(probeUri),
+                Position(0, 8)
+            ))
+
+            val result = future.get(5, java.util.concurrent.TimeUnit.SECONDS)
+
+            val items = when {
+                result == null -> emptyList()
+                result.isLeft -> result.left
+                result.isRight -> result.right.items
+                else -> emptyList()
+            } ?: emptyList()
+
+            thisLogger().info("Extracted ${items.size} completion items")
+
+            if (items.isNotEmpty()) {
+                val kinds = items.mapNotNull { it.kind?.value }.distinct().sorted()
+                thisLogger().info("Completion item kinds: $kinds")
+                if (items.size <= 10) {
+                    items.forEach { thisLogger().info("  item: label=${it.label}, kind=${it.kind}") }
+                }
+            } else {
+                thisLogger().info("Empty completion result")
+            }
+
+            rawServer.textDocumentService.didClose(DidCloseTextDocumentParams(
+                TextDocumentIdentifier(probeUri)
+            ))
+
+            val classItems = items.filter { it.kind?.value == LSP_KIND_CLASS }
+            thisLogger().info("Found ${classItems.size} class items")
+
+            return classItems.map { it.label }
+        } finally {
+            file.delete()
         }
-
-        thisLogger().info("Extracted ${items.size} completion items")
-
-        if (items.isNotEmpty()) {
-            val kinds = items.mapNotNull { it.kind?.value }.distinct().sorted()
-            thisLogger().info("Completion item kinds present: $kinds")
-        }
-
-        val classItems = items.filter { it.kind?.value == LSP_KIND_CLASS }
-        thisLogger().info("Found ${classItems.size} class items (kind=$LSP_KIND_CLASS)")
-
-        return classItems.map { it.label }
     }
 
     /**
@@ -209,12 +246,13 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
         return GdExtMethodInfo(methodName, params, returnType)
     }
 
+    private var probeFile: java.io.File? = null
+
     private fun openDocument(server: LspServer, text: String) {
-        server.sendNotification { ls ->
-            ls.textDocumentService.didClose(DidCloseTextDocumentParams(
-                TextDocumentIdentifier(probeUri)
-            ))
-        }
+        // Create a real file so Godot LSP can see it
+        val file = java.io.File(godotProjectPath, "_gdext_probe.gd")
+        file.writeText(text)
+        probeFile = file
 
         server.sendNotification { ls ->
             ls.textDocumentService.didOpen(DidOpenTextDocumentParams(
@@ -223,7 +261,7 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
         }
 
         // Let the server process
-        Thread.sleep(200)
+        Thread.sleep(300)
     }
 
     private fun closeDocument(server: LspServer) {
@@ -232,5 +270,7 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
                 TextDocumentIdentifier(probeUri)
             ))
         }
+        probeFile?.delete()
+        probeFile = null
     }
 }
