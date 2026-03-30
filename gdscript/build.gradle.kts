@@ -68,6 +68,11 @@ dependencies {
 intellijPlatform{
     instrumentCode = false
     buildSearchableOptions = buildConfiguration != "Debug"
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "253.31033"
+        }
+    }
 }
 
 tasks {
