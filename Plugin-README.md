@@ -100,8 +100,10 @@ godot-tools/
 
 ## TODO
 
-- [ ] **GDExtension Rust-Navigation:** Strg+Click auf GDExtension-Typen (z.B. `ActionSpaceResource`) soll zur Rust `#[derive(GodotClass)]` Struct navigieren statt zum generierten `.gd` Stub. Erfordert einen eigenen `GotoDeclarationHandler` der GDExtension class_names auf die Rust-Quellen mapped.
-- [ ] **Mehrzeilige Lambdas in Funktionsargumenten:** Der GDScript-Parser unterstützt mehrzeilige Lambdas mit trailing commas nicht korrekt (z.B. `store.connect(func(x): ..., CONNECT_ONE_SHOT)`). Godot akzeptiert das, der Plugin-Parser erzeugt Fehler. Erfordert Anpassung der Grammar (`Gd.bnf`) und Parser-Regenerierung.
+- [x] **GDExtension Rust-Navigation:** Strg+Click auf GDExtension-Typen navigiert zur Rust `#[derive(GodotClass)]` Struct via `GdExtensionGotoDeclarationHandler`. Mapping mit Cache und VFS-Invalidierung (`GdExtensionRustResolver`). Unterstuetzt `#[class(rename=...)]`.
+- [x] **Mehrzeilige Lambdas in Funktionsargumenten:** Lexer-Fix (`markLambda` mit `atIndent+1`) und Parser-Fixes (`GdStmtParser`, `GdPsiBuilder.mceEndStmt`, `GdArgListParser`) fuer mehrzeilige Lambdas als Funktionsargumente mit trailing commas. Funktioniert wenn `func` am Zeilenanfang steht (innerhalb Klammern). Edge-Case: `func` mitten in einer Zeile (z.B. `other(func():`) noch nicht unterstuetzt (RIDER-126458).
+
+- [ ] **SDK-Stubs fuer Godot 4.5/4.6:** Die gebundelten SDK-Stubs (`sdk.tar.xz`) gehen nur bis 4.4.1 + Master. Fuer Godot 4.6 fehlen ~60 Klassen (IK-Modifier, OpenXR Spatial, SocketServer/UDS etc.). `findSdkVersion()` faellt auf `Master` zurueck, der nicht alle 4.6-Klassen enthaelt. SDK-Stubs muessen upstream aktualisiert werden.
 
 ## Nicht portiert (Rider-spezifisch)
 
