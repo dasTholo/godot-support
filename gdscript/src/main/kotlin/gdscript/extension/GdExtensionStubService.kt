@@ -64,7 +64,16 @@ class GdExtensionStubService(private val project: Project) {
 
         // Step 4: Write stub files
         val stubDir = getStubDirectory()
-        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir)
+        val sdkPath = try {
+            val godotDir = findGodotProjectDir(java.io.File(project.basePath ?: ""))
+            val projectFile = godotDir?.resolve("project.godot")
+            val content = projectFile?.readText() ?: ""
+            val versionMatch = "config/features=PackedStringArray\\(.*\"(\\d\\.\\d)\".*\\)".toRegex().find(content)
+            val version = versionMatch?.groupValues?.get(1) ?: "4.4"
+            GdLibraryManager.extractSdkIfNeeded(version)
+        } catch (_: Exception) { null }
+
+        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir, sdkPath)
 
         // Step 5: Register as library
         GdLibraryManager.registerLibrary(LIBRARY_NAME, stubDir, project)
