@@ -83,68 +83,63 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
         }
     }
 
-    fun collectTypeDetails(typeName: String): GdExtTypeInfo {
-        val rawServer = getRawServer()
-            ?: return GdExtTypeInfo(typeName, "RefCounted", emptyList(), emptyList(), emptyList())
-
-        val inherits = getInheritance(rawServer, typeName)
-
-        // Get members via completion on an instance
-        openDocument(rawServer, "extends Node\nvar _x := $typeName.new()\nfunc _r():\n\t_x.")
-
-        val items = try {
-            val result = rawServer.textDocumentService.completion(CompletionParams(
-                TextDocumentIdentifier(probeUri), Position(3, 4)
-            )).get(5, TimeUnit.SECONDS)
-            extractItems(result) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
+    /**
+     * Collect details for multiple types in a single batch.
+     * Opens one probe document per type to get member completions.
+     */
+    fun collectAllTypeDetails(typeNames: List<String>): List<GdExtTypeInfo> {
+        val rawServer = getRawServer() ?: return typeNames.map {
+            GdExtTypeInfo(it, "RefCounted", emptyList(), emptyList(), emptyList())
         }
 
-        closeDocument(rawServer)
+        val results = mutableListOf<GdExtTypeInfo>()
 
-        val methods = mutableListOf<GdExtMethodInfo>()
-        val properties = mutableListOf<GdExtPropertyInfo>()
-        val signals = mutableListOf<GdExtSignalInfo>()
+        for ((i, typeName) in typeNames.withIndex()) {
+            if (i > 0 && i % 50 == 0) {
+                thisLogger().info("Collecting type details: $i/${typeNames.size}...")
+            }
 
-        for (item in items) {
-            val kind = item.kind?.value ?: continue
-            val label = item.label ?: continue
+            try {
+                // Single probe doc per type - get members
+                openDocument(rawServer, "extends Node\nvar _x := $typeName.new()\nfunc _r():\n\t_x.")
 
-            when (kind) {
-                LSP_KIND_METHOD -> {
-                    val methodName = label.removeSuffix("(…)").removeSuffix("()")
-                    // Use detail from completion item if available, otherwise just add with no params
-                    methods.add(GdExtMethodInfo(methodName, emptyList(), "Variant"))
+                val items = try {
+                    val result = rawServer.textDocumentService.completion(CompletionParams(
+                        TextDocumentIdentifier(probeUri), Position(3, 4)
+                    )).get(3, TimeUnit.SECONDS)
+                    extractItems(result) ?: emptyList()
+                } catch (e: Exception) {
+                    emptyList()
                 }
-                LSP_KIND_PROPERTY -> {
-                    properties.add(GdExtPropertyInfo(label, "Variant"))
+
+                closeDocument(rawServer)
+
+                val methods = mutableListOf<GdExtMethodInfo>()
+                val properties = mutableListOf<GdExtPropertyInfo>()
+                val signals = mutableListOf<GdExtSignalInfo>()
+
+                for (item in items) {
+                    val kind = item.kind?.value ?: continue
+                    val label = item.label ?: continue
+                    when (kind) {
+                        LSP_KIND_METHOD -> {
+                            val methodName = label.removeSuffix("(…)").removeSuffix("()")
+                            methods.add(GdExtMethodInfo(methodName, emptyList(), "Variant"))
+                        }
+                        LSP_KIND_PROPERTY -> properties.add(GdExtPropertyInfo(label, "Variant"))
+                        LSP_KIND_SIGNAL -> signals.add(GdExtSignalInfo(label))
+                    }
                 }
-                LSP_KIND_SIGNAL -> {
-                    signals.add(GdExtSignalInfo(label))
-                }
+
+                results.add(GdExtTypeInfo(typeName, "RefCounted", methods, properties, signals))
+            } catch (e: Exception) {
+                thisLogger().warn("Failed to collect details for $typeName: ${e.message}")
+                results.add(GdExtTypeInfo(typeName, "RefCounted", emptyList(), emptyList(), emptyList()))
             }
         }
 
-        return GdExtTypeInfo(typeName, inherits, methods, properties, signals)
-    }
-
-    private fun getInheritance(rawServer: org.eclipse.lsp4j.services.LanguageServer, typeName: String): String {
-        openDocument(rawServer, "extends $typeName\n")
-
-        return try {
-            val result = rawServer.textDocumentService.hover(HoverParams(
-                TextDocumentIdentifier(probeUri), Position(0, 8)
-            )).get(5, TimeUnit.SECONDS)
-
-            val value = result?.contents?.right?.value ?: return "RefCounted"
-            val extendsMatch = Regex("extends\\s+(\\w+)").find(value)
-            extendsMatch?.groupValues?.get(1) ?: "RefCounted"
-        } catch (e: Exception) {
-            "RefCounted"
-        } finally {
-            closeDocument(rawServer)
-        }
+        thisLogger().info("Collected details for ${results.size} types")
+        return results
     }
 
     private fun openDocument(rawServer: org.eclipse.lsp4j.services.LanguageServer, text: String) {
@@ -152,7 +147,7 @@ class GdExtensionTypeCollector(private val project: Project, private val godotPr
         rawServer.textDocumentService.didOpen(DidOpenTextDocumentParams(
             TextDocumentItem(probeUri, "gdscript", 1, text)
         ))
-        Thread.sleep(200)
+        Thread.sleep(100)
     }
 
     private fun closeDocument(rawServer: org.eclipse.lsp4j.services.LanguageServer) {

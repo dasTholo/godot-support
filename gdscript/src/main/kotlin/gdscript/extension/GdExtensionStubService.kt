@@ -44,15 +44,8 @@ class GdExtensionStubService(private val project: Project) {
 
         thisLogger().info("Found ${extensionTypes.size} potential GDExtension types, collecting details...")
 
-        // Step 3: Collect details for each extension type via LSP
-        val typeInfos = extensionTypes.mapNotNull { typeName ->
-            try {
-                collector.collectTypeDetails(typeName)
-            } catch (e: Exception) {
-                thisLogger().warn("Failed to collect details for $typeName: ${e.message}")
-                null
-            }
-        }
+        // Step 3: Collect details for all extension types via LSP (batched)
+        val typeInfos = collector.collectAllTypeDetails(extensionTypes)
 
         // Step 4: Write stub files
         val stubDir = getStubDirectory()
