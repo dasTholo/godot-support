@@ -8,7 +8,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons
+import com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons
 import com.jetbrains.rustrover.godot.community.EditorConnectionState
 import com.jetbrains.rustrover.godot.community.GodotCommunityBundle
 import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
@@ -33,18 +33,18 @@ class GodotActionsToolbar : DefaultActionGroup(), DumbAware {
         // Determine icon/text based on connection state
         when (GodotCommunityUtil.getEditorConnectionState(project)) {
             EditorConnectionState.CONNECTED -> {
-                e.presentation.icon = RiderPluginsGodotCommunityIcons.Godot
+                e.presentation.icon = RustRoverPluginsGodotCommunityIcons.Godot
                 e.presentation.text = GodotCommunityBundle.message("connected.to.godot.editor.text")
             }
 
             EditorConnectionState.DISCONNECTED -> {
-                e.presentation.icon = RiderPluginsGodotCommunityIcons.GodotDisconnected
+                e.presentation.icon = RustRoverPluginsGodotCommunityIcons.GodotDisconnected
                 e.presentation.text = GodotCommunityBundle.message("not.connected.to.godot.editor.text")
             }
 
             EditorConnectionState.NOT_APPLICABLE -> {
                 // No connection concept (pure GDScript) - show default connected icon
-                e.presentation.icon = RiderPluginsGodotCommunityIcons.Godot
+                e.presentation.icon = RustRoverPluginsGodotCommunityIcons.Godot
                 e.presentation.text = GodotCommunityBundle.message("godot.toolbar.text")
             }
         }

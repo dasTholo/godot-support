@@ -29,10 +29,10 @@ fun Deferred<Boolean>?.hasCompletedTrue(): Boolean {
 }
 
 private val GODOT_PROJECT_PROVIDER_EP: ExtensionPointName<GodotProjectProvider> =
-    ExtensionPointName.create("com.intellij.rider.godot.community.godotProjectProvider")
+    ExtensionPointName.create("com.intellij.rustrover.godot.community.godotProjectProvider")
 
 private val EDITOR_CONNECTION_PROVIDER_EP: ExtensionPointName<GodotEditorConnectionProvider> =
-    ExtensionPointName.create("com.intellij.rider.godot.community.editorConnectionProvider")
+    ExtensionPointName.create("com.intellij.rustrover.godot.community.editorConnectionProvider")
 
 object GodotCommunityUtil {
     fun getGodotExecutablePath(project: Project): Path? =
