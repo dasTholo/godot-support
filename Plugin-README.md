@@ -103,7 +103,8 @@ godot-tools/
 - [x] **GDExtension Rust-Navigation:** Strg+Click auf GDExtension-Typen navigiert zur Rust `#[derive(GodotClass)]` Struct via `GdExtensionGotoDeclarationHandler`. Mapping mit Cache und VFS-Invalidierung (`GdExtensionRustResolver`). Unterstuetzt `#[class(rename=...)]`.
 - [x] **Mehrzeilige Lambdas in Funktionsargumenten:** Lexer-Fix (`markLambda` mit `atIndent+1`) und Parser-Fixes (`GdStmtParser`, `GdPsiBuilder.mceEndStmt`, `GdArgListParser`) fuer mehrzeilige Lambdas als Funktionsargumente mit trailing commas. Funktioniert wenn `func` am Zeilenanfang steht (innerhalb Klammern). Edge-Case: `func` mitten in einer Zeile (z.B. `other(func():`) noch nicht unterstuetzt (RIDER-126458).
 
-- [ ] **SDK-Stubs fuer Godot 4.5/4.6:** Die gebundelten SDK-Stubs (`sdk.tar.xz`) gehen nur bis 4.4.1 + Master. Fuer Godot 4.6 fehlen ~60 Klassen (IK-Modifier, OpenXR Spatial, SocketServer/UDS etc.). `findSdkVersion()` faellt auf `Master` zurueck, der nicht alle 4.6-Klassen enthaelt. SDK-Stubs muessen upstream aktualisiert werden.
+- [x] **SDK-Stubs fuer Godot 4.6+:** SDK-Stubs werden lokal via Kotlin SDK-Builder (`buildSrc/`) gebaut. Support nur fuer Godot 4.6+, aeltere Versionen werden nicht mehr unterstuetzt. Der Builder filtert auf `>= 4.6` Tags.
+- [ ] **GDExtension Rust PSI statt Regex:** `GdExtensionRustResolver` von Regex-Parsing auf RustRover Rust PSI API (`org.rust.lang`) umstellen. Vorteile: Type-Alias-Aufloesung, Cross-File/Cross-Crate-Typen, Robustheit bei ungewoehnlicher Formatierung, Macro-Expansion (`#[godot_api]`). Dependency: `org.rust.lang` Plugin (in RustRover gebundelt). Niedrige Prioritaet — aktueller Regex-Ansatz deckt gdext-Standard gut ab.
 
 ## Nicht portiert (Rider-spezifisch)
 
@@ -127,7 +128,7 @@ git checkout 253
 # Community Plugin bauen (Dependency)
 cd community && ./gradlew buildPlugin && cd ..
 
-# GDScript Plugin bauen
+# GDScript Plugin bauen (SDK wird automatisch beim ersten Build erstellt, erfordert Internetzugang)
 cd gdscript && ./gradlew buildPlugin && cd ..
 
 # Ergebnis: gdscript/build/distributions/rider-gdscript.zip
@@ -141,6 +142,8 @@ cd gdscript && ./gradlew buildPlugin && cd ..
 | IntelliJ IDEA 2025.3 | 253.x | Sollte funktionieren |
 | CLion 2025.3 | 253.x | Sollte funktionieren |
 | PyCharm 2025.3 | 253.x | Sollte funktionieren |
+
+**Godot-Version:** 4.6+ (aeltere Versionen werden nicht unterstuetzt)
 
 ## Quelle
 
