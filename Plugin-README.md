@@ -78,25 +78,7 @@ Godot-Szenen direkt aus der IDE starten und debuggen.
 
 ## Zusammenführung: Godot Tools
 
-Nach erfolgreicher Einzeltestung werden alle drei Plugins zu einem **Godot Tools** Plugin zusammengeführt:
-
-```
-godot-tools/
-  src/main/
-    kotlin/
-      lsp/          # Godot LSP
-      project/      # Godot Project
-      runner/       # Godot Runner
-    resources/
-      META-INF/
-        plugin.xml  # Vereinte Plugin-Konfiguration
-```
-
-**Vorteile eines einzelnen Plugins:**
-- Ein Install statt drei
-- Geteilte Services (Projekt-Erkennung informiert LSP und Runner)
-- Einheitliche Settings-Page
-- Einfachere Wartung und Updates
+Die drei Plugins (community, godot-lsp, gdscript) werden zu einem einzigen Plugin zusammengefuehrt. Siehe Spec: `docs/superpowers/specs/2026-03-31-plugin-unification-design.md`
 
 ## TODO
 
@@ -104,7 +86,12 @@ godot-tools/
 - [x] **Mehrzeilige Lambdas in Funktionsargumenten:** Lexer-Fix (`markLambda` mit `atIndent+1`) und Parser-Fixes (`GdStmtParser`, `GdPsiBuilder.mceEndStmt`, `GdArgListParser`) fuer mehrzeilige Lambdas als Funktionsargumente mit trailing commas. Funktioniert wenn `func` am Zeilenanfang steht (innerhalb Klammern). Edge-Case: `func` mitten in einer Zeile (z.B. `other(func():`) noch nicht unterstuetzt (RIDER-126458).
 
 - [x] **SDK-Stubs fuer Godot 4.6+:** SDK-Stubs werden lokal via Kotlin SDK-Builder (`buildSrc/`) gebaut. Support nur fuer Godot 4.6+, aeltere Versionen werden nicht mehr unterstuetzt. Der Builder filtert auf `>= 4.6` Tags.
+- [ ] **Dynamische SDK-Generierung via Godot --doctool:** Statt vorgebaute SDK-Stubs zu bundlen, Godot-Binary nutzen um API-Stubs zu generieren. `godot --doctool ./engine_api_docs` fuer die Engine-API, `godot --doctool --headless ../extension --gdextension-docs` fuer GDExtension-APIs. Vorteile: kennt GDExtension-Typen, passt exakt zur installierten Godot-Version, kein Bundling noetig. Nachteil: braucht Godot-Binary, `--doctool` auf offiziellem Build liefert leere `<description>` Tags. Siehe [RIDER-127007](https://youtrack.jetbrains.com/issue/RIDER-127007), [godot-proposals#12641](https://github.com/godotengine/godot-proposals/issues/12641), [godot-support#377](https://github.com/JetBrains/godot-support/issues/377).
 - [ ] **GDExtension Rust PSI statt Regex:** `GdExtensionRustResolver` von Regex-Parsing auf RustRover Rust PSI API (`org.rust.lang`) umstellen. Vorteile: Type-Alias-Aufloesung, Cross-File/Cross-Crate-Typen, Robustheit bei ungewoehnlicher Formatierung, Macro-Expansion (`#[godot_api]`). Dependency: `org.rust.lang` Plugin (in RustRover gebundelt). Niedrige Prioritaet — aktueller Regex-Ansatz deckt gdext-Standard gut ab.
+
+## Bekannte Bugs
+
+- [ ] **GDExtension-Navigation landet auf SDK-Stub statt Rust-Klasse:** Strg+Click auf eine GDExtension-Klasse im GDScript (z.B. eine in Rust via `#[derive(GodotClass)]` definierte Klasse) navigiert zum SDK-Stub (`.gd` Datei) statt zur Rust-Struct. Der `GdExtensionGotoDeclarationHandler` wird vom normalen Go-to-Declaration ueberstimmt, das zuerst den SDK-Stub findet. Muss sichergestellt werden, dass GDExtension-Klassen Vorrang vor SDK-Stubs haben.
 
 ## Nicht portiert (Rider-spezifisch)
 
@@ -116,6 +103,8 @@ Folgende Features sind an Riders RD-Protocol und .NET-Infrastruktur gebunden und
 - .NET-Runtime-Autodetection
 - RD-Protocol Frontend-Backend-Kommunikation
 - C# Unit-Test-Framework-Integration (gdUnit4Net)
+
+**Aufraeum-Kandidaten:** Die Rider-spezifischen Module und Dateien im Repo (z.B. `resharper/`, RD-Protocol-Definitionen, .NET-bezogener Code) koennten entfernt werden, da sie fuer RustRover nicht benoetigt werden. Muss genauer geprueft werden welche Dateien sicher loeschbar sind und welche noch indirekt referenziert werden.
 
 ## Build
 
