@@ -19,14 +19,20 @@ val phpSdkOutput = phpDir.resolve("gdscriptsdk.tar.xz")
 val resultingSdkBaseName = "gdscriptsdk"
 val sdkResultingFullName = "$resultingSdkBaseName-$fullVersion.tar.xz"
 
-val runPhpScript = tasks.register<Exec>("runPhpScript") {
-    workingDir = phpDir
-    commandLine("php", phpDir.resolve("sdkBuilder.php").absolutePath)
+val runSdkBuilder = tasks.register("runSdkBuilder") {
     outputs.file(phpSdkOutput)
+
+    doLast {
+        val sdkDir = layout.buildDirectory.dir("sdk-work").get().asFile
+        sdk.SdkBuilder.build(sdkDir)
+        // Copy the resulting archive to expected location
+        sdkDir.resolve("sdk.tar.xz").copyTo(phpSdkOutput, overwrite = true)
+        sdkDir.deleteRecursively()
+    }
 }
 
 val prepareTar = tasks.register<Copy>("prepareTarForPublish") {
-    dependsOn(runPhpScript)
+    dependsOn(runSdkBuilder)
     from(phpSdkOutput)
     into(resultingDir)
     rename { sdkResultingFullName }
