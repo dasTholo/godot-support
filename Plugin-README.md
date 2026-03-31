@@ -10,7 +10,7 @@ Dieses Projekt extrahiert diese Features und macht sie für RustRover 2025.3 (Bu
 
 ## Plugin-Architektur
 
-Die Portierung erfolgt in drei einzeln testbaren Plugins, die langfristig zu einem einzigen **Godot Tools** Plugin zusammengeführt werden.
+Alle Features sind in einem einzigen **gdscript** Plugin vereint (community + godot-lsp + gdscript zusammengeführt auf Branch `253-unified`).
 
 ### 1. Godot LSP
 
@@ -78,7 +78,7 @@ Godot-Szenen direkt aus der IDE starten und debuggen.
 
 ## Zusammenführung: Godot Tools
 
-Die drei Plugins (community, godot-lsp, gdscript) werden zu einem einzigen Plugin zusammengefuehrt. Siehe Spec: `docs/superpowers/specs/2026-03-31-plugin-unification-design.md`
+Die drei Plugins (community, godot-lsp, gdscript) wurden zu einem einzigen Plugin zusammengefuehrt (Branch `253-unified`). Siehe Spec: `docs/superpowers/specs/2026-03-31-plugin-unification-design.md`
 
 ## TODO
 
@@ -112,16 +112,13 @@ Folgende Features sind an Riders RD-Protocol und .NET-Infrastruktur gebunden und
 Voraussetzung: JDK 21
 
 ```bash
-# Branch 253 (fuer RustRover 2025.3)
-git checkout 253
+# Branch 253-unified (fuer RustRover 2025.3)
+git checkout 253-unified
 
-# Community Plugin bauen (Dependency)
-cd community && ./gradlew buildPlugin && cd ..
-
-# GDScript Plugin bauen (SDK wird automatisch beim ersten Build erstellt, erfordert Internetzugang)
+# Plugin bauen (SDK wird automatisch beim ersten Build erstellt, erfordert Internetzugang)
 cd gdscript && ./gradlew buildPlugin && cd ..
 
-# Ergebnis: gdscript/build/distributions/rider-gdscript.zip
+# Ergebnis: gdscript/build/distributions/rustrover-gdscript.zip
 ```
 
 ## Kompatibilität
