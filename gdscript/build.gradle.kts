@@ -1,7 +1,11 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
-
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
@@ -10,6 +14,7 @@ plugins {
     alias(libs.plugins.gradleIntelliJPlatform)
     alias(libs.plugins.gradleJvmWrapper)
     alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.grammarkit)
     id("java")
 }
 
@@ -42,19 +47,25 @@ repositories {
 val buildConfiguration: String by project
 
 dependencies {
-    compileOnly(":rider-godot-community")
+    compileOnly(":rustrover-godot-community")
     compileOnly(":godot-lsp")
 
     intellijPlatform {
         intellijIdea(libs.versions.ideaSdk) { useInstaller = false }
         // rider(libs.versions.riderSdk, useInstaller = false) // instead of touching this, just use runRider gradle task
         jetbrainsRuntime()
+        // you need to compile the community plugin in advance, or this would fail. I haven't found a workaround
+        localPlugin(repoRoot.resolve("community/build/distributions/rustrover-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
+
+        bundledPlugin("com.intellij.modules.json")
+        bundledModule("intellij.platform.dap")
 
         bundledLibrary(provider {
             project.intellijPlatform.platformPath.resolve("lib/testFramework.jar").pathString
         })
     }
+    implementation(libs.jflex)
     testImplementation(libs.openTest4J)
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.0")
@@ -70,15 +81,60 @@ intellijPlatform{
     }
 }
 
+grammarKit {
+    // todo: figure out later
+}
+
+val lexers = listOf(
+    Triple("config", "config", "src/main/kotlin/config/GdConfig.flex"),
+    Triple("gdscript", "gdscript", "src/main/kotlin/gdscript/Gd.flex"),
+    Triple("gdscriptHighlighter", "gdscript", "src/main/kotlin/gdscript/GdHighlight.flex"),
+    Triple("tscn", "tscn", "src/main/kotlin/tscn/Tscn.flex"),
+    Triple("project", "project", "src/main/kotlin/project/Project.flex"),
+)
+
+lexers.forEach { (lexerName, folder, lexerPath) ->
+    project.tasks.register<GenerateLexerTask>("${lexerName}Lexer") {
+        sourceFile = file(lexerPath)
+        targetOutputDir = file("src/main/gen/$folder")
+        purgeOldFiles.set(false)
+    }
+}
+
 tasks {
+    compileKotlin {
+        dependsOn( lexers.map { "${it.first}Lexer" })
+    }
+    
+    // todo: tobe removed with RIDER-127007 Different approach to GD sdk
     register("prepare") {
         doLast {
+            val url = "https://packages.jetbrains.team/files/p/net/gdscriptsdk/gdscriptsdk-1.0.0-SNAPSHOT.tar.xz"
             val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
+            
+            // Create the SDK directory if it doesn't exist
+            if (!sdkDir.exists()) {
+                sdkDir.mkdirs()
+            }
+            
+            // Download the SDK
             val sdkFile = sdkDir.resolve("sdk.tar.xz")
-            if (sdkFile.exists()) return@doLast
+            if (sdkFile.exists()) {
+                return@doLast
+            }
+            val client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build()
+            val request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build()
 
-            // Build SDK locally (no PHP, no remote download)
-            sdk.SdkBuilder.build(sdkDir)
+            client.send(
+                request,
+                HttpResponse.BodyHandlers.ofFile(sdkFile.toPath())
+            )
+            
+            logger.lifecycle("Downloaded SDK from $url to ${sdkFile.absolutePath}")
         }
     }
 
@@ -90,8 +146,8 @@ tasks {
     }
 
     // run it to start Rider from SDK
-    val runRider by intellijPlatformTesting.runIde.registering {
-        type = IntelliJPlatformType.Rider
+    val runRustRover by intellijPlatformTesting.runIde.registering {
+        type = IntelliJPlatformType.RustRover
         version = libs.versions.riderSdk
         useInstaller = false
         task {
@@ -102,7 +158,7 @@ tasks {
             val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
 
             // sandboxPluginsDirectory is not adequate when calling runRider
-            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRider", pluginName, "sdk")
+            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRustRover", pluginName, "sdk")
             logger.lifecycle("Copying SDK from $sdkDir to $target2")
             project.copy {
                 from(sdkDir)
@@ -112,7 +168,9 @@ tasks {
     }
 
     runIde {
-        dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
+        if (gradle.includedBuilds.any { it.name == "community" }) {
+            dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
+        }
         jvmArgs("-Xmx1500m")
     }
 
