@@ -49,8 +49,6 @@ dependencies {
         intellijIdea(libs.versions.ideaSdk) { useInstaller = false }
         // rider(libs.versions.riderSdk, useInstaller = false) // instead of touching this, just use runRider gradle task
         jetbrainsRuntime()
-        // you need to compile the community plugin in advance, or this would fail. I haven't found a workaround
-        localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
 
         bundledLibrary(provider {
