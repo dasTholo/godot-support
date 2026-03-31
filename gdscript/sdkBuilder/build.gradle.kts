@@ -9,31 +9,27 @@ repositories {
     mavenCentral()
 }
 
-val phpDir = rootProject.projectDir.resolve("php")
 val resultingDir = layout.buildDirectory.dir("artifacts")
 val buildNumber = System.getenv("BUILD_NUMBER") ?: "SNAPSHOT"
 val baseVersion = property("baseVersion")?.toString() ?: error("Base version is not specified")
 val fullVersion = "$baseVersion.$buildNumber"
 
-val phpSdkOutput = phpDir.resolve("gdscriptsdk.tar.xz")
+val sdkOutput = layout.buildDirectory.file("sdk/sdk.tar.xz")
 val resultingSdkBaseName = "gdscriptsdk"
 val sdkResultingFullName = "$resultingSdkBaseName-$fullVersion.tar.xz"
 
 val runSdkBuilder = tasks.register("runSdkBuilder") {
-    outputs.file(phpSdkOutput)
+    outputs.file(sdkOutput)
 
     doLast {
-        val sdkDir = layout.buildDirectory.dir("sdk-work").get().asFile
+        val sdkDir = layout.buildDirectory.dir("sdk").get().asFile
         sdk.SdkBuilder.build(sdkDir)
-        // Copy the resulting archive to expected location
-        sdkDir.resolve("sdk.tar.xz").copyTo(phpSdkOutput, overwrite = true)
-        sdkDir.deleteRecursively()
     }
 }
 
 val prepareTar = tasks.register<Copy>("prepareTarForPublish") {
     dependsOn(runSdkBuilder)
-    from(phpSdkOutput)
+    from(sdkOutput)
     into(resultingDir)
     rename { sdkResultingFullName }
 
