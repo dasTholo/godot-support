@@ -1,3 +1,0 @@
-- name: lib/rustrover-plugins-godot-community.jar
-  modules:
-  - name: intellij.rustrover.plugins.godot.community
