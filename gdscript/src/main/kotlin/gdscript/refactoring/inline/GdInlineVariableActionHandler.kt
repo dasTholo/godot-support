@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.util.CommonRefactoringUtil
-import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
+import gdscript.GdLanguage
 import gdscript.psi.GdClassVarDeclTl
 import gdscript.psi.GdConstDeclSt
 import gdscript.psi.GdConstDeclTl

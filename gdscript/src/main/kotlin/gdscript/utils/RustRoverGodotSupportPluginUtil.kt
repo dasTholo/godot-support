@@ -2,7 +2,7 @@ package gdscript.utils
 
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.project.Project
-import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
+import project.utils.GodotCommunityUtil
 import java.nio.file.Path
 import java.nio.file.Paths
 

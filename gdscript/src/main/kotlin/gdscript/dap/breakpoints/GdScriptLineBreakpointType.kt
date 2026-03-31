@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.xdebugger.breakpoints.XLineBreakpointTypeBase
 import gdscript.GdScriptBundle
-import com.jetbrains.rustrover.godot.community.utils.GodotFileUtil
+import project.utils.GodotFileUtil
 
 internal class GdScriptLineBreakpointType :
   XLineBreakpointTypeBase(

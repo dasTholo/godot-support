@@ -2,7 +2,7 @@ package gdscript
 
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons
-import GdScriptBundle
+import gdscript.GdScriptBundle
 import javax.swing.Icon
 
 object GdFileType : LanguageFileType(GdLanguage) {

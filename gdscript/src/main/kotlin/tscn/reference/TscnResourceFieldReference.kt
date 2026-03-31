@@ -10,7 +10,7 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.parentOfType
-import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
+import gdscript.GdFileType
 import gdscript.psi.GdClassNameNmi
 import gdscript.psi.GdClassNaming
 import gdscript.psi.GdClassVarDeclTl

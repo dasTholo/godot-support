@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
+import gdscript.GdFileType
 
 /**
  * Create PsiElements for refactoring purposes

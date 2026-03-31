@@ -10,7 +10,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.lifetime.SequentialLifetimes
-import com.jetbrains.rustrover.godot.community.actions.StartGodotEditorAction
+import project.actions.StartGodotEditorAction
 import common.util.GdScriptProjectLifetimeService
 import gdscript.GdScriptBundle
 import kotlinx.coroutines.CoroutineScope

@@ -7,7 +7,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
+import gdscript.GdFileType
 import gdscript.codeInsight.GdDocumentationProvider
 import gdscript.completion.utils.GdEnumCompletionUtil.preview
 import gdscript.completion.utils.GdMethodCompletionUtil.methodHeader
@@ -50,7 +50,7 @@ import gdscript.utils.VirtualFileUtil.resourcePath
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import project.ProjectFileType
-import com.jetbrains.rustrover.godot.community.tscn.TscnFileType
+import tscn.TscnFileType
 
 object GdDocFactory {
 

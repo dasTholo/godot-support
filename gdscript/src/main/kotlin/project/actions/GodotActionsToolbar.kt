@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons
 import project.EditorConnectionState
-import project.GdScriptBundle
+import gdscript.GdScriptBundle
 import project.utils.GodotCommunityUtil
 import project.utils.hasCompletedTrue
 import kotlinx.coroutines.CoroutineScope

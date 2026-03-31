@@ -6,8 +6,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProviderBase
-import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
-import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
+import gdscript.GdFileType
+import gdscript.GdLanguage
 
 internal class GdScriptDebuggerEditorsProvider: XDebuggerEditorsProviderBase() {
     override fun getFileType(): FileType = GdFileType

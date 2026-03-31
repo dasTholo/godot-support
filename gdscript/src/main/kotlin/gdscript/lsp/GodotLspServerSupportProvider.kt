@@ -31,10 +31,10 @@ import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
 import com.intellij.util.NetworkUtils
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
-import com.jetbrains.rustrover.godot.community.GodotMajorVersion
-import com.jetbrains.rustrover.godot.community.GodotMetadataService
-import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
-import com.jetbrains.rustrover.godot.community.utils.GodotFileUtil
+import project.GodotMajorVersion
+import project.GodotMetadataService
+import project.utils.GodotCommunityUtil
+import project.utils.GodotFileUtil
 import common.util.GdScriptProjectLifetimeService
 import gdscript.settings.GdDocProviderMode
 import gdscript.settings.GdProjectSettingsState

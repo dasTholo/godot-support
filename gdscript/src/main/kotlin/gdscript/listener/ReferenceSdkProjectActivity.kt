@@ -2,7 +2,7 @@ package gdscript.listener
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
+import project.utils.GodotCommunityUtil
 import gdscript.library.GdLibraryUpdater
 
 class ReferenceSdkProjectActivity : ProjectActivity {

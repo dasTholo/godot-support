@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerManager
 import com.intellij.platform.lsp.api.LspServerState
-import godot.lsp.service.GodotLspServerSupportProvider
+import gdscript.lsp.GodotLspServerSupportProvider
 import org.eclipse.lsp4j.*
 import java.util.concurrent.TimeUnit
 

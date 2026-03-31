@@ -12,7 +12,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
-import com.jetbrains.rustrover.godot.community.gdscript.GdFileType
+import gdscript.GdFileType
 import gdscript.GdScriptBundle
 import gdscript.action.util.GdCellRenderer
 import gdscript.action.util.GdTraitClass

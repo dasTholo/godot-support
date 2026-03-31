@@ -7,7 +7,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.usageView.UsageInfo
 import gdscript.utils.ProjectUtil.contentScope
 import gdscript.utils.VirtualFileUtil.resourcePath
-import com.jetbrains.rustrover.godot.community.tscn.TscnFileType
+import tscn.TscnFileType
 import tscn.index.impl.TscnResourceIndex
 
 class TscnResourceSearcher(val project: Project) {

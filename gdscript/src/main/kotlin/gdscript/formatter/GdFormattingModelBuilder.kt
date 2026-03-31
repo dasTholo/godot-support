@@ -9,7 +9,7 @@ import com.intellij.formatting.Indent
 import com.intellij.formatting.SpacingBuilder
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.tree.TokenSet
-import com.jetbrains.rustrover.godot.community.gdscript.GdLanguage
+import gdscript.GdLanguage
 import gdscript.formatter.block.Alignments
 import gdscript.formatter.block.GdBlock
 import gdscript.formatter.settings.GdSpacingUtil.emptyLines

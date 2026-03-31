@@ -7,7 +7,7 @@ import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.columns
-import GdScriptBundle
+import gdscript.GdScriptBundle
 
 class GodotLspSettingsConfigurable : BoundConfigurable(GdScriptBundle.message("settings.display.name")) {
     private val settings = GodotLspSettings.getInstance()

@@ -5,8 +5,8 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
-import com.jetbrains.rustrover.godot.community.run.configurations.GodotRunContextUtil
-import com.jetbrains.rustrover.godot.community.utils.GodotCommunityUtil
+import project.run.GodotRunContextUtil
+import project.utils.GodotCommunityUtil
 
 class GdScriptSceneRunConfigurationProducer : LazyRunConfigurationProducer<GdScriptRunConfiguration>() {
     override fun getConfigurationFactory() = runConfigurationType<GdScriptConfigurationType>().factory

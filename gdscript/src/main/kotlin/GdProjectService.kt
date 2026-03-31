@@ -7,8 +7,8 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.jetbrains.rustrover.godot.community.GodotMetadataFileWatcher
-import com.jetbrains.rustrover.godot.community.GodotMetadataService
+import project.GodotMetadataFileWatcher
+import project.GodotMetadataService
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
