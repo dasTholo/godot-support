@@ -201,7 +201,9 @@ class GdClassMemberReference : PsiReferenceBase<GdRefIdRef>, HighlightedReferenc
                             if (isStaticAccess == true && !resolved.isStatic) return@Resolver null
                         }
                         is GdClassDeclTl -> {
-                            // Accessing a class via instance (obj.ClassName) is invalid
+                            if (isStaticAccess == false) return@Resolver null
+                        }
+                        is GdEnumDeclTl -> {
                             if (isStaticAccess == false) return@Resolver null
                         }
                         is GdEnumDeclTl -> {

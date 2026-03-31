@@ -58,7 +58,10 @@ object GdStmtParser : GdBaseParser {
         ok && asLambda && b.passToken(NEW_LINE)
         if (asLambda) {
             if (b.nextTokenIs(DEDENT)) {
-                if (!b.followingTokensAre(DEDENT, NEW_LINE) && !b.followingTokensAre(DEDENT, END_STMT)) {
+                if (b.isArgs && b.followingTokensAre(DEDENT, COMMA)) {
+                    // Lambda ends, COMMA signals next argument — consume DEDENT
+                    b.consumeToken(DEDENT)
+                } else if (!b.followingTokensAre(DEDENT, NEW_LINE) && !b.followingTokensAre(DEDENT, END_STMT)) {
                     b.remapCurrentToken(NEW_LINE)
                 } else {
                     b.consumeToken(DEDENT)

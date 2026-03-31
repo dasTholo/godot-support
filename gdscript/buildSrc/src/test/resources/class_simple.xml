@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MyClass" inherits="RefCounted" version="4.6" is_deprecated="true">
+    <brief_description>A simple class.</brief_description>
+    <description>This is the full description.</description>
+    <tutorials>
+        <link title="My Tutorial">$DOCS_URL/tutorials/my_tutorial.html</link>
+    </tutorials>
+    <signals>
+        <signal name="value_changed">
+            <param index="0" name="new_value" type="int" />
+            <description>Emitted when value changes.</description>
+        </signal>
+    </signals>
+    <constants>
+        <constant name="MAX_SIZE" value="100">Max size constant.</constant>
+        <constant name="FLAG_A" value="1" enum="MyEnum">Flag A.</constant>
+        <constant name="FLAG_B" value="2" enum="MyEnum">Flag B.</constant>
+    </constants>
+    <members>
+        <member name="speed" type="float" getter="get_speed" setter="set_speed">The speed.</member>
+    </members>
+    <constructors>
+        <constructor name="MyClass">
+            <return type="MyClass" />
+            <param index="0" name="value" type="int" default="0" />
+            <description>Creates a MyClass.</description>
+        </constructor>
+    </constructors>
+    <methods>
+        <method name="do_thing" qualifiers="static">
+            <return type="void" />
+            <param index="0" name="items" type="Node[]" />
+            <description>Does a thing.</description>
+        </method>
+        <method name="_process" qualifiers="virtual">
+            <return type="void" />
+            <param index="0" name="delta" type="float" />
+            <description>Process frame.</description>
+        </method>
+    </methods>
+</class>

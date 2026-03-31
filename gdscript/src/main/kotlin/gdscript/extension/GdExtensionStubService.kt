@@ -47,22 +47,33 @@ class GdExtensionStubService(private val project: Project) {
         // Step 3: Collect details for all extension types via LSP (batched)
         val typeInfos = collector.collectAllTypeDetails(extensionTypes)
 
-        // Step 3b: Enrich with Rust source data (full signatures + base class + static methods)
+        // Step 3b: Enrich with Rust source data (full signatures + base class + static methods + signals)
         val rustResolver = GdExtensionRustResolver.getInstance(project)
         val enrichedTypeInfos = typeInfos.map { type ->
             val rustMethods = rustResolver.collectMethodSignatures(type.name)
+            val rustSignals = rustResolver.collectSignals(type.name)
             val baseClass = rustResolver.getBaseClass(type.name)
             val staticMethods = rustResolver.collectStaticMethods(type.name)
             type.copy(
                 inherits = baseClass ?: type.inherits,
                 staticMethods = staticMethods,
-                rustMethods = rustMethods.ifEmpty { null }
+                rustMethods = rustMethods.ifEmpty { null },
+                rustSignals = rustSignals.ifEmpty { null }
             )
         }
 
         // Step 4: Write stub files
         val stubDir = getStubDirectory()
-        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir)
+        val sdkPath = try {
+            val godotDir = findGodotProjectDir(java.io.File(project.basePath ?: ""))
+            val projectFile = godotDir?.resolve("project.godot")
+            val content = projectFile?.readText() ?: ""
+            val versionMatch = "config/features=PackedStringArray\\(.*\"(\\d\\.\\d)\".*\\)".toRegex().find(content)
+            val version = versionMatch?.groupValues?.get(1) ?: "4.4"
+            GdLibraryManager.extractSdkIfNeeded(version)
+        } catch (_: Exception) { null }
+
+        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir, sdkPath)
 
         // Step 5: Register as library
         GdLibraryManager.registerLibrary(LIBRARY_NAME, stubDir, project)
