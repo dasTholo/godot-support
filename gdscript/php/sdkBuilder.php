@@ -29,7 +29,11 @@ foreach ($tags as $tag) {
     preg_match($tagRegex, $tag, $matched);
     $tag = $matched[1] ?? '';
     if (str_starts_with($tag, "4.")) {
-        $existingTags[] = $tag;
+        // Nur 4.6+ unterstuetzen
+        $minor = (int) explode(".", $tag)[1];
+        if ($minor >= 6) {
+            $existingTags[] = $tag;
+        }
     }
 }
 
