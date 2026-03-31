@@ -14,11 +14,13 @@
   <dependencies>
     <plugin id="com.intellij.modules.lang"/>
     <module name="intellij.json"/>
-    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
-    <plugin id="com.intellij.rustrover.godot.community"/>
     <module name="intellij.platform.dap"/>
-    <!-- endregion -->
   </dependencies>
+
+  <extensionPoints>
+    <extensionPoint name="godotProjectProvider" interface="project.GodotProjectProvider" dynamic="true" />
+    <extensionPoint name="editorConnectionProvider" interface="project.GodotEditorConnectionProvider" dynamic="true"/>
+  </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
     <lang.parserDefinition language="GdScript" implementationClass="gdscript.GdParserDefinition"/>
@@ -44,7 +46,13 @@
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
     <backgroundPostStartupActivity implementation="gdscript.lsp.GodotLspStartOnFocusGainedActivity"/>
-    <rustrover.godot.community.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+    <com.intellij.rustrover.godot.gdscript.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+    <fileType name="GdScript" implementationClass="gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
+    <fileType name="Tscn file" implementationClass="tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
+    <postStartupActivity implementation="project.GodotMetadataFileWatcherManager"/>
+    <applicationService serviceImplementation="gdscript.lsp.settings.GodotLspSettings"/>
+    <applicationConfigurable instance="gdscript.lsp.settings.GodotLspSettingsConfigurable"
+        id="godot.lsp.settings" displayName="Godot LSP" parentId="tools"/>
     <projectViewNestingRulesProvider implementation="gdscript.structureView.GdFileNesting"/>
     <platform.lsp.serverSupportProvider implementation="gdscript.lsp.GodotLspServerSupportProvider"/>
     <toolWindow id="TscnScenePreviewWindowId"
@@ -238,6 +246,11 @@
 
     <editorNotificationProvider implementation="gdscript.lsp.GodotLspNotConnectedNotificationProvider"/>
 
+    <!-- GDExtension support (formerly in gdext-stub-support.xml) -->
+    <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
+    <gotoDeclarationHandler implementation="gdscript.extension.GdExtensionGotoDeclarationHandler" order="first"/>
+    <projectService serviceImplementation="gdscript.extension.GdExtensionRustResolver"/>
+
     <!-- DAP debugging -->
     <runConfigurationProducer implementation="gdscript.dap.GdScriptSceneRunConfigurationProducer" />
     <configurationType implementation="gdscript.dap.GdScriptConfigurationType"/>
@@ -254,15 +267,25 @@
   </extensions>
 
   <actions>
-    <action id="GdCreateFileAction" class="gdscript.action.GdCreateFileAction" icon="com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons.GDScript" >
+    <action id="GdCreateFileAction" class="gdscript.action.GdCreateFileAction" icon="com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons.GDScript" >
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile" />
     </action>
     <action id="GdAddTraitAction" class="gdscript.action.GdAddTraitAction">
       <add-to-group group-id="GenerateGroup" anchor="first" />
     </action>
+    <group id="GodotActionsToolbar" popup="true" class="project.actions.GodotActionsToolbar" icon="com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons.Godot">
+      <add-to-group group-id="MainToolbarRight" anchor="first" />
+      <action id="StartGodotEditorAction"
+              class="project.actions.StartGodotEditorAction"
+              icon="AllIcons.Actions.Execute">
+      </action>
+    </group>
+    <!-- GDExtension support (formerly in gdext-stub-support.xml) -->
+    <action id="GdExtensionRefreshAction" class="gdscript.extension.GdExtensionRefreshAction"
+            text="Refresh GDExtension Types" description="Regenerate GDExtension type stubs from Godot LSP">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
   </actions>
-
-  <depends optional="true" config-file="gdext-stub-support.xml">godot.lsp</depends>
 
   <resource-bundle>messages.GdScriptBundle</resource-bundle>
 
