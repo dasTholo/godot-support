@@ -1,7 +1,7 @@
 package gdscript
 
 import com.intellij.openapi.fileTypes.LanguageFileType
-import com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons
+import GdScriptPluginIcons
 import gdscript.GdScriptBundle
 import javax.swing.Icon
 

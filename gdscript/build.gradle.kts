@@ -47,15 +47,10 @@ repositories {
 val buildConfiguration: String by project
 
 dependencies {
-    compileOnly(":rustrover-godot-community")
-    compileOnly(":godot-lsp")
-
     intellijPlatform {
         intellijIdea(libs.versions.ideaSdk) { useInstaller = false }
         // rider(libs.versions.riderSdk, useInstaller = false) // instead of touching this, just use runRider gradle task
         jetbrainsRuntime()
-        // you need to compile the community plugin in advance, or this would fail. I haven't found a workaround
-        localPlugin(repoRoot.resolve("community/build/distributions/rustrover-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
 
         bundledPlugin("com.intellij.modules.json")
@@ -169,9 +164,6 @@ tasks {
     }
 
     runIde {
-        if (gradle.includedBuilds.any { it.name == "community" }) {
-            dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
-        }
         jvmArgs("-Xmx1500m")
     }
 

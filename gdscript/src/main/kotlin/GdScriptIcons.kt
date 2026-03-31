@@ -1,3 +1,4 @@
+import com.intellij.openapi.util.IconLoader
 import com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons
 
 // IJ will automatically add `_dark` to the basename of the SVG file if in Dark theme.
@@ -10,6 +11,9 @@ class GdScriptPluginIcons {
             val GodotFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GodotFile
             val GodotConfigFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.FileDialog
             val GodotProjectFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.FileDialog
+            val GDScript = IconLoader.getIcon("icons/GDScript.svg", GdScriptPluginIcons::class.java)
+            val Godot = IconLoader.getIcon("icons/Godot.svg", GdScriptPluginIcons::class.java)
+            val GodotDisconnected = IconLoader.getIcon("icons/GodotDisconnected.svg", GdScriptPluginIcons::class.java)
         }
     }
 

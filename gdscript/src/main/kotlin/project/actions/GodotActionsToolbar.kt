@@ -8,7 +8,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.rustrover.plugins.godot.community.icons.RustRoverPluginsGodotCommunityIcons
+import GdScriptPluginIcons
 import project.EditorConnectionState
 import gdscript.GdScriptBundle
 import project.utils.GodotCommunityUtil
