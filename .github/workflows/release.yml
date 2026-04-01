@@ -24,6 +24,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Run SdkBuilder Tests
+        working-directory: gdscript
+        run: ./gradlew -p buildSrc test --console=plain --no-daemon
+
       - name: Build Plugin
         working-directory: gdscript
         run: ./gradlew buildPlugin --no-daemon
