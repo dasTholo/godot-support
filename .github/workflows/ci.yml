@@ -7,6 +7,30 @@ on:
   workflow_dispatch:
 
 jobs:
+  remove-docs:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove docs/ if present
+        run: |
+          if [ -d "docs" ] && [ -n "$(git ls-files docs/)" ]; then
+            git rm -r docs/
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: auto-remove docs/ from PR"
+            git push
+          else
+            echo "No tracked docs/ files found, skipping."
+          fi
+
   build:
     runs-on: ubuntu-latest
     env:
