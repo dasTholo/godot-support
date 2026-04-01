@@ -248,7 +248,6 @@
 
     <!-- GDExtension support (formerly in gdext-stub-support.xml) -->
     <backgroundPostStartupActivity implementation="gdscript.extension.GdExtensionStubActivity"/>
-    <gotoDeclarationHandler implementation="gdscript.extension.GdExtensionGotoDeclarationHandler" order="first"/>
     <projectService serviceImplementation="gdscript.extension.GdExtensionRustResolver"/>
 
     <!-- DAP debugging -->
