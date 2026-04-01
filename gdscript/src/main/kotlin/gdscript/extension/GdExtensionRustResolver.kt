@@ -1,5 +1,6 @@
 package gdscript.extension
 
+import com.intellij.psi.PsiElement
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -34,6 +35,25 @@ class GdExtensionRustResolver(private val project: Project) : Disposable {
     companion object {
         fun getInstance(project: Project): GdExtensionRustResolver =
             project.getService(GdExtensionRustResolver::class.java)
+
+        /**
+         * If [resolved] lives inside a generated gdext-stubs/ directory, look up the
+         * corresponding Rust struct and return its PsiElement instead.  Returns the
+         * original [resolved] element when no Rust mapping exists.
+         */
+        fun resolveToRustIfStub(resolved: PsiElement, project: Project): PsiElement {
+            val vf = resolved.containingFile?.virtualFile ?: return resolved
+            if (!vf.path.contains("/gdext-stubs/")) return resolved
+
+            val className = resolved.text ?: return resolved
+            val resolver = getInstance(project)
+            val mapping = resolver.buildClassNameMapping()
+            val rustLocation = mapping[className] ?: return resolved
+
+            val psiManager = com.intellij.psi.PsiManager.getInstance(project)
+            val rustFile = psiManager.findFile(rustLocation.virtualFile) ?: return resolved
+            return rustFile.findElementAt(rustLocation.offset) ?: rustFile
+        }
 
         private val GODOT_CLASS_PATTERN = Regex(
             """#\[derive\([^)]*GodotClass[^)]*\)\]\s*(?:#\[class\(([^)]*)\)\]\s*)?(?:pub\s+)?struct\s+(\w+)""",
