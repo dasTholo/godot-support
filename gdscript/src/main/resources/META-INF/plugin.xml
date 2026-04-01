@@ -272,6 +272,18 @@
       defaultValue="false"
       description="Enables experimental 'LSP Not Connected' banner"
       restartRequired="false"/>
+
+    <!-- Scene Tree debug tab -->
+    <registryKey
+      key="gdscript.debug.sceneTree.enabled"
+      defaultValue="true"
+      description="Enables the Scene Tree tab in GDScript debug sessions"
+      restartRequired="false"/>
+    <registryKey
+      key="gdscript.debug.sceneTree.maxDepth"
+      defaultValue="10"
+      description="Maximum depth for Scene Tree expansion during debugging"
+      restartRequired="false"/>
   </extensions>
 
   <actions>
