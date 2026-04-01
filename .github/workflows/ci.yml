@@ -31,3 +31,37 @@ jobs:
       - name: Run Tests
         working-directory: gdscript
         run: ./gradlew test --console=plain --no-daemon
+
+      - name: Verify Plugin
+        working-directory: gdscript
+        run: ./gradlew verifyPluginStructure --no-daemon
+
+      - name: Upload Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gdscript-plugin
+          path: gdscript/build/distributions/*.zip
+          if-no-files-found: error
+
+  remove-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove docs/ if present
+        run: |
+          if [ -d "docs" ] && [ -n "$(git ls-files docs/)" ]; then
+            git rm -r docs/
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: auto-remove docs/ from PR"
+            git push
+          else
+            echo "No tracked docs/ files found, skipping."
+          fi
