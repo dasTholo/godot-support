@@ -89,10 +89,11 @@ Die drei Plugins (community, godot-lsp, gdscript) wurden zu einem einzigen Plugi
 - [ ] **Dynamische SDK-Generierung via Godot --doctool:** Statt vorgebaute SDK-Stubs zu bundlen, Godot-Binary nutzen um API-Stubs zu generieren. `godot --doctool ./engine_api_docs` fuer die Engine-API, `godot --doctool --headless ../extension --gdextension-docs` fuer GDExtension-APIs. Vorteile: kennt GDExtension-Typen, passt exakt zur installierten Godot-Version, kein Bundling noetig. Nachteil: braucht Godot-Binary, `--doctool` auf offiziellem Build liefert leere `<description>` Tags. Siehe [RIDER-127007](https://youtrack.jetbrains.com/issue/RIDER-127007), [godot-proposals#12641](https://github.com/godotengine/godot-proposals/issues/12641), [godot-support#377](https://github.com/JetBrains/godot-support/issues/377).
 - [ ] **GDExtension Rust PSI statt Regex:** `GdExtensionRustResolver` von Regex-Parsing auf RustRover Rust PSI API (`org.rust.lang`) umstellen. Vorteile: Type-Alias-Aufloesung, Cross-File/Cross-Crate-Typen, Robustheit bei ungewoehnlicher Formatierung, Macro-Expansion (`#[godot_api]`). Dependency: `org.rust.lang` Plugin (in RustRover gebundelt). Niedrige Prioritaet - [ ] add rustrover Overlay funktion to supress FalsePostiv Warnings und Errors
 - [ ] add inline comments to supress FalsePostiv Warnings und Errors
+- [ ] add more Jetbrains Rustrover funktion to handle this Supress falsepositives and more PSI tools?
 
 ## Bekannte Bugs
 
-- [ ] **GDExtension-Navigation landet auf SDK-Stub statt Rust-Klasse:** Strg+Click auf eine GDExtension-Klasse im GDScript (z.B. eine in Rust via `#[derive(GodotClass)]` definierte Klasse) navigiert zum SDK-Stub (`.gd` Datei) statt zur Rust-Struct. Der `GdExtensionGotoDeclarationHandler` wird vom normalen Go-to-Declaration ueberstimmt, das zuerst den SDK-Stub findet. Muss sichergestellt werden, dass GDExtension-Klassen Vorrang vor SDK-Stubs haben.
+- [x] **GDExtension-Navigation landet auf SDK-Stub statt Rust-Klasse:** ~~Strg+Click navigierte zum SDK-Stub statt zur Rust-Struct.~~ Gefixt: `resolveToRustIfStub()` in `GdExtensionRustResolver` prueft ob das aufgeloeste Element in `gdext-stubs/` liegt und leitet zur Rust-Quelle weiter. `GdExtensionGotoDeclarationHandler` entfernt (redundant).
 
 ## Nicht portiert (Rider-spezifisch)
 
@@ -134,4 +135,4 @@ cd gdscript && ./gradlew buildPlugin && cd ..
 
 ## Quelle
 
-Basiert auf [JetBrains/godot-support](https://github.com/JetBrains/godot-support), Branch `253`.
+Basiert auf [JetBrains/godot-support](https://github.com/JetBrains/godot-support)
