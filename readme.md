@@ -2,7 +2,7 @@
 
 # Godot Support for RustRover
 
-Community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-support) for **RustRover** and other non-Rider JetBrains IDEs.
+Community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-support) for **RustRover**.
 
 ## GdScript Plugin
 
@@ -18,9 +18,15 @@ Community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-s
 
 ## Installation
 
-### RustRover / Other JetBrains IDEs
+### From Release (recommended)
 
-Build from source (requires JDK 21):
+1. Download the latest `rustrover-gdscript.zip` from [Releases](https://github.com/dasTholo/godot-support/releases)
+2. In RustRover: **Settings → Plugins → ⚙️ → Install Plugin from Disk…**
+3. Select the downloaded `.zip` file and restart the IDE
+
+### Build from Source
+
+Requires JDK 21:
 
 ```bash
 cd gdscript && ./gradlew buildPlugin
