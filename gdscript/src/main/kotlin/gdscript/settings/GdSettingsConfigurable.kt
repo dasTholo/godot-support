@@ -1,8 +1,11 @@
 package gdscript.settings
 
+import GdProjectService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import gdscript.GdScriptBundle
+import java.nio.file.Path
 import javax.swing.JComponent
 
 class GdSettingsConfigurable(val project: Project) : Configurable {
@@ -55,6 +58,18 @@ class GdSettingsConfigurable(val project: Project) : Configurable {
         settings.godotProjectPath = component?.godotProjectPath ?: ""
 
         GdLspSettingsFlowService.getInstance(project).settingsChanged()
+
+        // Re-discover Godot project if path changed
+        val newPath = settings.godotProjectPath
+        if (newPath.isNotBlank()) {
+            val manualDir = VfsUtil.findFile(Path.of(newPath), true)
+            if (manualDir != null) {
+                GdProjectService.getInstance(project).discoverProject(manualDir)
+            }
+        } else {
+            // Reset to auto-detection: re-init will happen on next project open
+            GdProjectService.getInstance(project).autoDetectProject()
+        }
     }
 
     override fun reset() {
