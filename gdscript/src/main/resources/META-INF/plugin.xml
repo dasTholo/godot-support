@@ -22,6 +22,10 @@
     <extensionPoint name="editorConnectionProvider" interface="project.GodotEditorConnectionProvider" dynamic="true"/>
   </extensionPoints>
 
+  <extensions defaultExtensionNs="com.dastholo.rustrover.gdscript">
+    <godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <lang.parserDefinition language="GdScript" implementationClass="gdscript.GdParserDefinition"/>
     <highlightErrorFilter implementation="gdscript.codeInsight.highlighting.GdErrorFilter"/>
@@ -46,7 +50,6 @@
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
     <backgroundPostStartupActivity implementation="gdscript.lsp.GodotLspStartOnFocusGainedActivity"/>
-    <com.dastholo.rustrover.gdscript.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
     <fileType name="GdScript" implementationClass="gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
     <fileType name="Tscn file" implementationClass="tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
     <postStartupActivity implementation="project.GodotMetadataFileWatcherManager"/>
