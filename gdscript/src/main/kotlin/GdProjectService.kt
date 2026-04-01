@@ -4,9 +4,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import gdscript.settings.GdProjectSettingsState
 import project.GodotMetadataFileWatcher
 import project.GodotMetadataService
 import kotlinx.coroutines.CompletableDeferred
@@ -44,14 +46,29 @@ class GdProjectService(
     fun getExecutablePath(): Path? = _projectGodotFile?.parent?.let { getGodot4Path(it.toNioPath()) }
 
     init {
+        // Check for manual override first
+        val manualPath = GdProjectSettingsState.getInstance(project).state.godotProjectPath
+        if (manualPath.isNotBlank()) {
+            val manualDir = VfsUtil.findFile(Path.of(manualPath), true)
+            if (manualDir != null && manualDir.findChild("project.godot") != null) {
+                discoverProject(manualDir)
+            } else {
+                // Fall through to auto-detection if manual path is invalid
+                autoDetectProject()
+            }
+        } else {
+            autoDetectProject()
+        }
+    }
+
+    fun autoDetectProject() {
         val projectDir = project.guessProjectDir()
         val projectGodot = projectDir?.findChild("project.godot")
         if (projectDir != null && projectGodot != null) {
             discoverProject(projectDir)
         } else {
-            // todo: react on further changes of the VFS or the index, I am not sure
-            DumbService.getInstance(project).runWhenSmart { // Wait for indexes to finish
-                scope.launch(Dispatchers.IO){
+            DumbService.getInstance(project).runWhenSmart {
+                scope.launch(Dispatchers.IO) {
                     val projectGodotFile = readAction {
                         FilenameIndex.firstVirtualFileWithName("project.godot", true,
                             GlobalSearchScope.projectScope(project), null

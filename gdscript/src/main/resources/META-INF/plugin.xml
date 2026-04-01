@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/JetBrains/godot-support">
-  <id>com.intellij.rustrover.godot.gdscript</id>
+  <id>com.dastholo.rustrover.gdscript</id>
   <name>GdScript</name>
   <vendor>DasTholo</vendor>
 
@@ -21,6 +21,11 @@
     <extensionPoint name="godotProjectProvider" interface="project.GodotProjectProvider" dynamic="true" />
     <extensionPoint name="editorConnectionProvider" interface="project.GodotEditorConnectionProvider" dynamic="true"/>
   </extensionPoints>
+
+  <extensions defaultExtensionNs="com.dastholo.rustrover.gdscript">
+    <godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+  </extensions>
+
 
   <extensions defaultExtensionNs="com.intellij">
     <lang.parserDefinition language="GdScript" implementationClass="gdscript.GdParserDefinition"/>
@@ -46,7 +51,6 @@
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
     <backgroundPostStartupActivity implementation="gdscript.lsp.GodotLspStartOnFocusGainedActivity"/>
-    <com.intellij.rustrover.godot.gdscript.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
     <fileType name="GdScript" implementationClass="gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
     <fileType name="Tscn file" implementationClass="tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
     <postStartupActivity implementation="project.GodotMetadataFileWatcherManager"/>
@@ -258,10 +262,31 @@
     <xdebugger.breakpointType implementation="gdscript.dap.breakpoints.GdScriptLineBreakpointType"/>
     <xdebugger.breakpointType implementation="gdscript.dap.breakpoints.GdScriptExceptionBreakpointType"/>
     <backgroundPostStartupActivity implementation="gdscript.dap.GdScriptRunConfigurationGenerator$Activity"/>
+
+    <!-- Debug expression evaluation -->
+    <completion.contributor language="GdScript"
+                            implementationClass="gdscript.dap.evaluation.GdScriptDebugCompletionContributor"
+                            order="first"/>
+
+    <!-- LLDB formatters for gdext -->
+    <backgroundPostStartupActivity implementation="gdscript.dap.lldb.GdExtLldbConfigurator"/>
+
     <registryKey
       key="gdscript.lsp.not.connected.banner.enabled"
       defaultValue="false"
       description="Enables experimental 'LSP Not Connected' banner"
+      restartRequired="false"/>
+
+    <!-- Scene Tree debug tab -->
+    <registryKey
+      key="gdscript.debug.sceneTree.enabled"
+      defaultValue="true"
+      description="Enables the Scene Tree tab in GDScript debug sessions"
+      restartRequired="false"/>
+    <registryKey
+      key="gdscript.debug.sceneTree.maxDepth"
+      defaultValue="10"
+      description="Maximum depth for Scene Tree expansion during debugging"
       restartRequired="false"/>
   </extensions>
 

@@ -32,10 +32,19 @@ import java.util.regex.Pattern;
     // For signals and such, where Indents/NewLines do not matter
     boolean ignoreIndent = false;
     int ignored = 0;
+    // Indent thresholds for active multiline lambda bodies.
+    // When indent >= threshold, tokens are NOT ignored (lambda body is active).
     Stack<Integer> ignoreLambda = new Stack<>();
+    // Tracks the `ignored` nesting level at each `func` keyword inside parens.
+    // Used to detect the matching `:` that ends the lambda header.
+    Stack<Integer> lambdaFuncLevels = new Stack<>();
+    // Set when `:` is detected as a lambda's colon; cleared by the next
+    // non-whitespace token (single-line lambda) or by `\n` (multiline lambda).
+    boolean lambdaColonSeen = false;
     Pattern nextNonCommentIndentPattern = Pattern.compile("\\n([ |\\t]*)[^#\\s]");
 
     public IElementType dedentRoot(IElementType type) {
+        lambdaColonSeen = false;
         newLineProcessed = false;
         lineEnded = false;
         if (isIgnored() || yycolumn > 0 || indent <= 0 || indentSizes.empty()) {
@@ -88,37 +97,41 @@ import java.util.regex.Pattern;
     private boolean isIgnored() {
         if (ignored <= 0) return false;
         if (!ignoreLambda.isEmpty()) {
-            int diff = yycolumn;
-            if (diff == 0) {
-                diff = yylength();
+            if (yycolumn == 0) {
+                // At start of line: compare token length (indent size) with threshold
+                return ignoreLambda.peek() > yylength();
             }
-
-            return ignoreLambda.peek() > diff;
+            // Mid-line: check whether current indent level puts us inside a lambda body
+            return indent < ignoreLambda.peek();
         }
-
         return true;
     }
 
     private void ignoredMinus() {
-        if (!ignoreLambda.isEmpty() && ignoreLambda.peek() >= yycolumn) {
+        ignored--;
+        while (!ignoreLambda.isEmpty() && ignoreLambda.peek() >= yycolumn) {
             ignoreLambda.pop();
         }
-        ignored--;
     }
 
     private void markLambda() {
         if (ignored > 0) {
-            int atIndent = 999;
-            CharSequence spaces = zzBuffer.subSequence(zzCurrentPos - yycolumn, zzCurrentPos);
-            if (spaces.toString().trim().isEmpty()) {
-                // Push column + 1 so that sibling arguments at the same indent
-                // as func remain in the "ignored" zone, while the lambda body
-                // (indented deeper) gets proper INDENT/DEDENT tokens.
-                atIndent = spaces.length() + 1;
-            }
-
-            ignoreLambda.push(atIndent);
+            lambdaFuncLevels.push(ignored);
         }
+    }
+
+    private int getLineIndent() {
+        int lineStart = zzCurrentPos - yycolumn;
+        int indentLen = 0;
+        for (int i = lineStart; i < zzCurrentPos; i++) {
+            char c = zzBuffer.charAt(i);
+            if (c == ' ' || c == '\t') {
+                indentLen++;
+            } else {
+                break;
+            }
+        }
+        return indentLen;
     }
 %}
 
@@ -157,6 +170,9 @@ SINGLE_QUOTED_LITERAL = \' {SINGLE_QUOTED_CONTENT}* \'?
 
 DOUBLE_QUOTED_CONTENT = {STRING_ESC} | [^\"\n\r]
 DOUBLE_QUOTED_LITERAL = [\$\^]?\" {DOUBLE_QUOTED_CONTENT}* \"
+
+TRIPLE_SINGLE_QUOTED_CONTENT = {SINGLE_QUOTED_CONTENT} | {STRING_NL} | \'(\')?[^\'\\]
+TRIPLE_SINGLE_QUOTED_LITERAL = \'\'\' {TRIPLE_SINGLE_QUOTED_CONTENT}* \'\'\'
 
 TRIPLE_DOUBLE_QUOTED_CONTENT = {DOUBLE_QUOTED_CONTENT} | {STRING_NL} | \"(\")?[^\"\\$]
 TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
@@ -229,7 +245,14 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     "."            { return dedentRoot(GdTypes.DOT); }
     ","            { return dedentRoot(GdTypes.COMMA); }
     ":="           { return dedentRoot(GdTypes.CEQ); }
-    ":"            { return dedentRoot(GdTypes.COLON); }
+    ":"            {
+                       IElementType result = dedentRoot(GdTypes.COLON);
+                       if (!lambdaFuncLevels.isEmpty() && ignored == lambdaFuncLevels.peek()) {
+                           lambdaColonSeen = true;
+                           lambdaFuncLevels.pop();
+                       }
+                       return result;
+                   }
     ";"            { newLineProcessed = true; return GdTypes.SEMICON; }
     "!"            { return dedentRoot(GdTypes.NEGATE); }
     "not"          { return dedentRoot(GdTypes.NEGATE); }
@@ -271,9 +294,10 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
           return dedentRoot(GdTypes.NODE_PATH_LEX);
     }
 
+    {TRIPLE_SINGLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
+    {TRIPLE_DOUBLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
     {SINGLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
     {DOUBLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
-    {TRIPLE_DOUBLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
 
     {ASSIGN}        { return GdTypes.ASSIGN; }
     {TEST_OPERATOR} { return GdTypes.TEST_OPERATOR; }
@@ -295,6 +319,14 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     }
     {EMPTY_INDENT} { if (yycolumn > 0) { yypushback(1); } return TokenType.WHITE_SPACE; }
     {NEW_LINE}     {
+        if (lambdaColonSeen) {
+            lambdaColonSeen = false;
+            int lineIndent = getLineIndent();
+            ignoreLambda.push(lineIndent + 1);
+            newLineProcessed = true;
+            return GdTypes.NEW_LINE;
+        }
+
         if (yycolumn == 0) {
             return TokenType.WHITE_SPACE;
         } else if (isIgnored()) {

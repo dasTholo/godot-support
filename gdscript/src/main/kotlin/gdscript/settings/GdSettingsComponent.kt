@@ -1,7 +1,9 @@
 package gdscript.settings
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.TitledSeparator
@@ -27,6 +29,7 @@ class GdSettingsComponent(val project: Project) {
     private val lspConnectionModeCb = ComboBox<GdLspConnectionMode>()
     private val lspUseDynamicPortCheck = JBCheckBox(GdScriptBundle.message("settings.checkbox.lsp.use.dynamic.port"))
     private val lspRemoteHostPortTf: JTextField = JTextField()
+    private val godotProjectPathTf: TextFieldWithBrowseButton = TextFieldWithBrowseButton()
 
     init {
         annotatorsCb.addItem(GdProjectState.OFF)
@@ -58,7 +61,15 @@ class GdSettingsComponent(val project: Project) {
         lspConnectionModeCb.addActionListener { updateLspControlsState() }
         lspUseDynamicPortCheck.addActionListener { updateLspControlsState() }
 
+        godotProjectPathTf.addBrowseFolderListener(
+            GdScriptBundle.message("settings.label.godot.project.path"),
+            null,
+            project,
+            FileChooserDescriptorFactory.createSingleFolderDescriptor()
+        )
+
         panel = FormBuilder.createFormBuilder()
+            .addLabeledComponent(GdScriptBundle.message("settings.label.godot.project.path"), godotProjectPathTf, 1)
             .addComponent(hidePrivateCheck, 1)
             .addComponent(shortTypedCheck, 1)
             .addLabeledComponent(GdScriptBundle.message("settings.label.reference.node.resource.checks"), annotatorsCb, 1)
@@ -143,6 +154,12 @@ class GdSettingsComponent(val project: Project) {
         get() = docProviderCb.selectedItem as GdDocProviderMode
         set(newStatus) {
             docProviderCb.selectedItem = newStatus
+        }
+
+    var godotProjectPath: String
+        get() = godotProjectPathTf.text
+        set(newStatus) {
+            godotProjectPathTf.text = newStatus
         }
 
 }

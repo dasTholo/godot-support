@@ -3,7 +3,6 @@ package gdscript.lsp
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.lsp.api.Lsp4jClient
-import com.intellij.platform.lsp.api.LspServerManager
 import com.intellij.platform.lsp.api.LspServerNotificationsHandler
 import project.utils.GodotCommunityUtil
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
@@ -30,10 +29,7 @@ class GodotLsp4jClient(
 
         if (godotBasePath != workspacePath) {
             thisLogger().warn(
-                "Workspace path $workspacePath doesn't match Godot base path $godotBasePath, disconnecting LSP server")
-
-            GodotLspNotification.getService(project).showNonMatchingProjectWarning()
-            LspServerManager.getInstance(project).stopServers(GodotLspServerSupportProvider::class.java)
+                "Workspace path $workspacePath doesn't match Godot base path $godotBasePath")
         }
     }
 }
