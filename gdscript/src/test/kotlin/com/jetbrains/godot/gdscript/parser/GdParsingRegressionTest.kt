@@ -9,7 +9,7 @@ import org.junit.runners.JUnit4
 class GdParsingRegressionTest : BasePlatformTestCase() {
 
     // Regression: ensure parsing completes for inline lambda with multiple semicolon-separated statements
-    @Test // tried to set the timeout, but it always failed to finish in time
+    @Test(timeout = 10_000) // known infinite-parse issue — fail fast instead of hanging
     fun testInlineLambdaWithSemicolons_NoInfiniteParse() {
         val code = """
             |func test():
