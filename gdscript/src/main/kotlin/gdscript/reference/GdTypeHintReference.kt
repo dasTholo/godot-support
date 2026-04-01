@@ -12,6 +12,7 @@ import gdscript.GdKeywords
 import gdscript.completion.GdLookup
 import gdscript.completion.utils.GdClassCompletionUtil
 import gdscript.completion.utils.GdClassCompletionUtil.lookup
+import gdscript.extension.GdExtensionRustResolver
 import gdscript.completion.utils.GdEnumCompletionUtil.lookup
 import gdscript.index.impl.GdClassNamingIndex
 import gdscript.psi.GdCallEx
@@ -54,7 +55,9 @@ class GdTypeHintReference : PsiReferenceBase<GdTypeHintRef> {
             this,
             ResolveCache.Resolver { _, _ ->
                 val classId = GdClassNamingIndex.INSTANCE.getGlobally(key, project).firstOrNull()?.classNameNmi
-                if (classId != null) return@Resolver classId
+                if (classId != null) {
+                    return@Resolver GdExtensionRustResolver.resolveToRustIfStub(classId, project)
+                }
 
                 val container = if (key.contains(".")) {
                     val ownerClassId = getOwnerClass() ?: return@Resolver null
