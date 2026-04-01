@@ -8,7 +8,7 @@ import gdscript.psi.GdTypes.*
 object GdStmtParser : GdBaseParser {
 
     val parsers = mutableListOf<GdStmtBaseParser>()
-    var moved = false
+    private var moved = false
 
     init {
         parsers.add(GdAssignStmtParser)
@@ -90,36 +90,35 @@ object GdStmtParser : GdBaseParser {
         if (!b.recursionGuard(l, "InnerStmt")) return false
         moved = false
 
-        if (
-            parsers.any {
-                if (asLambda && it is GdEmptyStmtParser) return@any false
-                b.enterSection(it.STMT_TYPE)
-                var ok = it.parse(b, l + 1)
-                ok = ok || b.pinned()
+        val matched = parsers.any {
+            if (asLambda && it is GdEmptyStmtParser) return@any false
+            b.enterSection(it.STMT_TYPE)
+            var ok = it.parse(b, l + 1)
+            ok = ok || b.pinned()
 
-                if (asLambda) {
-                    ok = ok && b.nextTokenIs(SEMICON, NEW_LINE, RRBR, DEDENT, COMMA)
-                    if (ok && b.isArgs) {
-                        b.passToken(NEW_LINE) || b.passToken(SEMICON) || b.nextTokenIs(COMMA)
-                    }
-                } else {
-                    ok = ok && it.parseEndStmt(b)
+            if (asLambda) {
+                ok = ok && b.nextTokenIs(SEMICON, NEW_LINE, RRBR, DEDENT, COMMA)
+                if (ok && b.isArgs) {
+                    b.passToken(NEW_LINE) || b.passToken(SEMICON) || b.nextTokenIs(COMMA)
                 }
-
-                ok = ok || b.pinned()
-                if (ok && !asLambda) {
-                    if (it.endWithEndStmt) GdRecovery.stmt(b)
-                    else GdRecovery.stmtNoLine(b)
-                }
-                b.exitSection(ok, true)
-
-                ok
+            } else {
+                ok = ok && it.parseEndStmt(b)
             }
-        ) {
-            moved = true
 
-            return true
+            ok = ok || b.pinned()
+            if (ok && !asLambda) {
+                if (it.endWithEndStmt) GdRecovery.stmt(b)
+                else GdRecovery.stmtNoLine(b)
+            }
+            b.exitSection(ok, true)
+
+            ok
         }
+
+        // Overwrite moved to reflect THIS call's result, not any inner/recursive call
+        moved = matched
+
+        if (matched) return true
 
         if (!optional) {
             b.error("Statement expected")
