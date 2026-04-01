@@ -294,9 +294,10 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
           return dedentRoot(GdTypes.NODE_PATH_LEX);
     }
 
+    {TRIPLE_SINGLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
+    {TRIPLE_DOUBLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
     {SINGLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
     {DOUBLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
-    {TRIPLE_DOUBLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
 
     {ASSIGN}        { return GdTypes.ASSIGN; }
     {TEST_OPERATOR} { return GdTypes.TEST_OPERATOR; }
