@@ -94,6 +94,6 @@ Kein Fallback auf Remote-Download mehr noetig — das SDK wird immer lokal gebau
 ### Verifizierung
 
 1. `./gradlew prepare` baut SDK ohne PHP
-2. Archiv enthaelt nur 4.6+ Versionen + Master
+2. Archiv enthaelt nur 4.6+ Versionen und höher + Master
 3. Generierte `.gd` Stubs und `.gdconf` Dateien sind identisch mit PHP-Output
 4. `./gradlew buildPlugin` erfolgreich mit dem neuen SDK
