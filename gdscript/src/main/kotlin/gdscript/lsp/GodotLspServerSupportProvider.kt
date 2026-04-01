@@ -40,7 +40,7 @@ import gdscript.settings.GdDocProviderMode
 import gdscript.settings.GdProjectSettingsState
 import gdscript.settings.GdLspConnectionMode
 import gdscript.settings.GdLspSettingsFlowService
-import gdscript.settings.GdSettingsConfigurable
+import gdscript.lsp.settings.GodotLspSettingsConfigurable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -75,7 +75,7 @@ class GodotLspProjectService(val project: Project) {
 
 class GodotLspServerSupportProvider : LspServerSupportProvider {
     override fun createLspServerWidgetItem(lspServer: LspServer, currentFile: VirtualFile?): LspServerWidgetItem =
-        GodotLspServerWidgetItem(lspServer, currentFile, GdScriptPluginIcons.Icons.GodotLogo, settingsPageClass = GdSettingsConfigurable::class.java)
+        GodotLspServerWidgetItem(lspServer, currentFile, GdScriptPluginIcons.Icons.GodotLogo, settingsPageClass = GodotLspSettingsConfigurable::class.java)
 
     override fun fileOpened(project: Project, file: VirtualFile, serverStarter: LspServerSupportProvider.LspServerStarter) {
         if (GodotFileUtil.isGdFile(file)) {
