@@ -67,7 +67,7 @@ intellijPlatform{
     instrumentCode = false
     buildSearchableOptions = buildConfiguration != "Debug"
     pluginConfiguration {
-        version = "1.0.0"
+        version = "0.25.0"
         ideaVersion {
             sinceBuild = "253.31033"
         }
