@@ -264,6 +264,9 @@
                             implementationClass="gdscript.dap.evaluation.GdScriptDebugCompletionContributor"
                             order="first"/>
 
+    <!-- LLDB formatters for gdext -->
+    <backgroundPostStartupActivity implementation="gdscript.dap.lldb.GdExtLldbConfigurator"/>
+
     <registryKey
       key="gdscript.lsp.not.connected.banner.enabled"
       defaultValue="false"
