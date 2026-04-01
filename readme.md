@@ -1,56 +1,39 @@
 [![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://github.com/JetBrains#jetbrains-on-github)
 
-# JetBrains Godot Development Tools
+# Godot Support for RustRover
 
-This repository contains a collection of plugins that enhance Godot game development in JetBrains IDEs:
+Community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-support) for **RustRover** and other non-Rider JetBrains IDEs.
 
-1. **Godot Support Plugin** - Basic GDScript, enhanced C# support for Godot in Rider
-2. **GdScript Plugin** - Enhanced GDScript support
-3. **Community Plugin** - Technical bridge between the two
+## GdScript Plugin
 
-## JetBrains Rider
-
-Rider is JetBrains' cross platform IDE, based on ReSharper and the IntelliJ Platform. It can be used on Windows, Mac and Linux providing rich code navigation, inspections and refactorings.
-
-## Godot Support Plugin for Rider
-
-**Key components:**
-- Located in the `rider`, `resharper`, and `debugger` folders
-- Focused on C# development for Godot
-- However provides LSP and debugging for GDScript
-
-[Dedicated readme](godot-support/features.md)
-
-## GdScript Plugin for JetBrains IDEs
-
-**Key components:**
 - Located in the `gdscript` folder
-- Supports Godot 4.0 and higher
-- Focused on GdScript development
+- Supports Godot 4.6 and higher
+- GDScript language support (parser, completion, references, inspections)
+- Godot LSP integration (auto-connect to Godot editor)
+- DAP-based GDScript debugging
+- GDExtension/Rust navigation
+- Scene file (`.tscn`) support
 
-[Dedicated readme](gdscript/README.md)
-
-## Community Plugin
-
-The "Community" plugin serves as a technical bridge between the Godot Support and GdScript plugins. It provides common interfaces and extension points that both plugins can use to communicate with each other.
-
-**Key components:**
-- Located in the `community` folder
-- Provides extension points between the other plugins
-- Referenced by both the Godot Support and GdScript plugins
+[Detailed readme](gdscript/README.md)
 
 ## Installation
 
-### JetBrains Rider
-- All the three plugins for Godot developments are bundled in Rider.
+### RustRover / Other JetBrains IDEs
 
-### Other JetBrains IDEs
-- The GdScript Plugin can be build targeting any JetBrains IDE SDK. _To be documented._
+Build from source (requires JDK 21):
+
+```bash
+cd gdscript && ./gradlew buildPlugin
+# Result: gdscript/build/distributions/rustrover-gdscript.zip
+```
 
 ## License
 
-- **Godot Support Plugin** and **Community Plugin** are licensed under the [Apache License 2.0](LICENSE)
-- **GdScript Plugin** is licensed under the [MIT License](gdscript/LICENSE)
+[MIT License](LICENSE)
+
+Based on:
+- [gdscript](https://github.com/penguinencounter/gdscript) by David Horaček (MIT)
+- [godot-support](https://github.com/JetBrains/godot-support) by JetBrains s.r.o. (Apache 2.0)
 
 ## Contributing
 

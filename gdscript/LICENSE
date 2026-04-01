@@ -1,7 +1,12 @@
 MIT License
 
-Copyright (c) 2021 David Horaček
-Copyright (c) 2025 JetBrains s.r.o.
+Copyright (c) 2021 David Horaček (https://github.com/penguinencounter/gdscript)
+Copyright (c) 2025 JetBrains s.r.o. (https://github.com/JetBrains/godot-support)
+Copyright (c) 2026 DasTholo
+
+Based on:
+- gdscript plugin by David Horaček (MIT License)
+- godot-support by JetBrains s.r.o. (Apache License 2.0, https://github.com/JetBrains/godot-support)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

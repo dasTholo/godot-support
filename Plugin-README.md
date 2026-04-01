@@ -97,7 +97,7 @@ Die drei Plugins (community, godot-lsp, gdscript) wurden zu einem einzigen Plugi
 
 ## Nicht portiert (Rider-spezifisch)
 
-Folgende Features sind an Riders RD-Protocol und .NET-Infrastruktur gebunden und werden nicht portiert:
+Folgende Features sind an Riders RD-Protocol und .NET-Infrastruktur gebunden und werden nicht portiert. Die entsprechenden Module (`rider/`, `resharper/`, `debugger/`) wurden aus dem Repository entfernt.
 
 - C# Code-Analyse und Completions (ReSharper-Backend)
 - .NET-Debugging und Remote-Debugging
@@ -105,8 +105,6 @@ Folgende Features sind an Riders RD-Protocol und .NET-Infrastruktur gebunden und
 - .NET-Runtime-Autodetection
 - RD-Protocol Frontend-Backend-Kommunikation
 - C# Unit-Test-Framework-Integration (gdUnit4Net)
-
-**Aufraeum-Kandidaten:** Die Rider-spezifischen Module und Dateien im Repo (z.B. `resharper/`, RD-Protocol-Definitionen, .NET-bezogener Code) koennten entfernt werden, da sie fuer RustRover nicht benoetigt werden. Muss genauer geprueft werden welche Dateien sicher loeschbar sind und welche noch indirekt referenziert werden.
 
 ## Build
 
