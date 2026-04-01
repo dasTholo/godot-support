@@ -67,6 +67,7 @@ intellijPlatform{
     instrumentCode = false
     buildSearchableOptions = buildConfiguration != "Debug"
     pluginConfiguration {
+        version = "1.0.0"
         ideaVersion {
             sinceBuild = "253.31033"
         }
@@ -100,20 +101,22 @@ tasks {
     
     register("prepare") {
         doLast {
-            val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
-            val sdkFile = sdkDir.resolve("sdk.tar.xz")
+            val cacheDir = File(System.getProperty("user.home"), ".cache/godot-gdscript-sdk")
+            val sdkFile = cacheDir.resolve("sdk.tar.xz")
             if (sdkFile.exists()) {
+                logger.lifecycle("SDK cache hit: ${sdkFile.absolutePath}")
                 return@doLast
             }
-            sdk.SdkBuilder.build(sdkDir)
+            logger.lifecycle("SDK cache miss, building SDK...")
+            sdk.SdkBuilder.build(cacheDir)
         }
     }
 
     prepareSandbox{
         dependsOn("prepare")
         val pluginName = intellijPlatform.projectName.get()
-        val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
-        from(sdkDir) { into(Path(pluginName, "sdk").pathString)}
+        val cacheDir = File(System.getProperty("user.home"), ".cache/godot-gdscript-sdk")
+        from(cacheDir) { into(Path(pluginName, "sdk").pathString)}
     }
 
     // run it to start Rider from SDK
@@ -126,13 +129,13 @@ tasks {
             dependsOn(prepareSandbox)
 
             val pluginName = intellijPlatform.projectName.get()
-            val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
+            val cacheDir = File(System.getProperty("user.home"), ".cache/godot-gdscript-sdk")
 
             // sandboxPluginsDirectory is not adequate when calling runRider
             val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRustRover", pluginName, "sdk")
-            logger.lifecycle("Copying SDK from $sdkDir to $target2")
+            logger.lifecycle("Copying SDK from $cacheDir to $target2")
             project.copy {
-                from(sdkDir)
+                from(cacheDir)
                 into(target2)
             }
         }

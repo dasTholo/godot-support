@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/JetBrains/godot-support">
-  <id>com.intellij.rustrover.godot.gdscript</id>
+  <id>com.dastholo.rustrover.gdscript</id>
   <name>GdScript</name>
   <vendor>DasTholo</vendor>
 
@@ -46,7 +46,7 @@
     <backgroundPostStartupActivity implementation="gdscript.listener.ReferenceSdkProjectActivity"/>
     <backgroundPostStartupActivity implementation="GdScriptToolWindowManagerProjectActivity"/>
     <backgroundPostStartupActivity implementation="gdscript.lsp.GodotLspStartOnFocusGainedActivity"/>
-    <com.intellij.rustrover.godot.gdscript.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
+    <com.dastholo.rustrover.gdscript.godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
     <fileType name="GdScript" implementationClass="gdscript.GdFileType" fieldName="INSTANCE" language="GdScript" extensions="gd;gdf"/>
     <fileType name="Tscn file" implementationClass="tscn.TscnFileType" fieldName="INSTANCE" language="Tscn" extensions="tscn"/>
     <postStartupActivity implementation="project.GodotMetadataFileWatcherManager"/>

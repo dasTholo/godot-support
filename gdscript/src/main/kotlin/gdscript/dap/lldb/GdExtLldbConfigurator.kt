@@ -44,7 +44,7 @@ class GdExtLldbConfigurator : ProjectActivity {
     }
 
     private fun findFormatterPath(): String? {
-        val pluginId = PluginId.getId("com.intellij.rustrover.godot.gdscript")
+        val pluginId = PluginId.getId("com.dastholo.rustrover.gdscript")
         val plugin = PluginManagerCore.getPlugin(pluginId) ?: return null
         val pluginPath = plugin.pluginPath ?: return null
         val formatterFile = pluginPath.resolve("debugger/gdext_lldb_formatters.py")
