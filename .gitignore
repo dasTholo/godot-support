@@ -7,22 +7,10 @@
 **/obj
 **/bin
 
-rider/.intellijPlatform
-rider/build
-rider/protocol/build
-rider/classes
-rider/nuget
-
 gdscript/.intellijPlatform
 gdscript/build
 gdscript/protocol/build
 gdscript/classes
-
-community/.intellijPlatform
-community/build
-community/protocol/build
-community/classes
-community/nuget
 
 *generated*
 *Generated*
@@ -30,3 +18,5 @@ community/nuget
 NuGet.Config
 
 *.hprof
+
+docs/

@@ -3,7 +3,7 @@ package gdscript.templates
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptorFactory
-import com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons
+import GdScriptPluginIcons
 import javax.swing.Icon
 
 /**
@@ -12,7 +12,7 @@ import javax.swing.Icon
 class GdFileTemplateGroupFactory : FileTemplateGroupDescriptorFactory {
   override fun getFileTemplatesDescriptor(): FileTemplateGroupDescriptor {
     val groupName = "GDScript"
-    val groupIcon: Icon = RiderPluginsGodotCommunityIcons.GDScript
+    val groupIcon: Icon = GdScriptPluginIcons.Icons.GDScript
     val group = FileTemplateGroupDescriptor(groupName, groupIcon)
 
     group.addTemplate(FileTemplateDescriptor("Node default.gd"))

@@ -1,9 +1,7 @@
 package gdscript.psi.utils
 
 import gdscript.GdKeywords
-import gdscript.psi.GdMethodDeclTl
-import gdscript.psi.GdParam
-import gdscript.psi.GdTypes
+import gdscript.psi.*
 
 object PsiGdMethodDeclUtil {
 
@@ -20,12 +18,11 @@ object PsiGdMethodDeclUtil {
             return stub.isVariadic()
         }
 
-        // old style, only in the GdSDK
         if (element.methodSpecifierList.any { it.text == GdKeywords.VARARG }) return true
-        // New style using rest parameter `...name`
-        val params = element.paramList?.children ?: return false
-        return params.any { ch ->
-            ch is GdParam && ch.firstChild?.node?.elementType == GdTypes.DOTDOTDOT
+
+        val params = element.paramList?.paramList ?: return false
+        return params.any { param ->
+            param.node.getChildren(null).any { it.elementType == GdTypes.ELLIPSIS }
         }
     }
 

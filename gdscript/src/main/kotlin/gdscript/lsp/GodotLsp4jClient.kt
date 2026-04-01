@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.lsp.api.Lsp4jClient
 import com.intellij.platform.lsp.api.LspServerManager
 import com.intellij.platform.lsp.api.LspServerNotificationsHandler
-import com.jetbrains.rider.godot.community.utils.GodotCommunityUtil
+import project.utils.GodotCommunityUtil
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
 import kotlin.io.path.Path
 

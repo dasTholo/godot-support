@@ -3,20 +3,12 @@ package gdscript.parser.stmt
 import gdscript.parser.GdBaseParser
 import gdscript.parser.GdPsiBuilder
 import gdscript.parser.recovery.GdRecovery
-import gdscript.psi.GdTypes.COMMA
-import gdscript.psi.GdTypes.DEDENT
-import gdscript.psi.GdTypes.END_STMT
-import gdscript.psi.GdTypes.INDENT
-import gdscript.psi.GdTypes.NEW_LINE
-import gdscript.psi.GdTypes.RRBR
-import gdscript.psi.GdTypes.SEMICON
-import gdscript.psi.GdTypes.STMT_OR_SUITE
-import gdscript.psi.GdTypes.SUITE
+import gdscript.psi.GdTypes.*
 
 object GdStmtParser : GdBaseParser {
 
     val parsers = mutableListOf<GdStmtBaseParser>()
-    data class StmtParsingResult(val ok: Boolean, val moved: Boolean)
+    private var moved = false
 
     init {
         parsers.add(GdAssignStmtParser)
@@ -34,18 +26,15 @@ object GdStmtParser : GdBaseParser {
 
     override fun parse(b: GdPsiBuilder, l: Int, optional: Boolean): Boolean {
         if (!b.recursionGuard(l, "Stmt")) return false
-        // When parsing inside an argument list (e.g., a lambda passed as an argument),
-        // continue treating nested statements as lambda-context to allow multiline suites.
-        return parseLambda(b, l + 1, optional, b.isArgs)
+        return parseLambda(b, l + 1, optional, false)
     }
 
-    fun parseLambda(b: GdPsiBuilder, l: Int, optional: Boolean, asLambda: Boolean): Boolean {
+    fun parseLambda(b: GdPsiBuilder, l: Int, optional: Boolean, asLambda: Boolean, isLambdaEntry: Boolean = false): Boolean {
         if (!b.recursionGuard(l, "Lambda")) return false
+        if (isLambdaEntry && b.isArgs) b.lambdaArgsDepth++
         b.enterSection(STMT_OR_SUITE)
-        var ok = suite(b, l + 1, false, asLambda)
-
-        if (!ok)
-            ok = stmt(b, l + 1, optional, asLambda).ok
+        var ok = suite(b, l + 1, false, asLambda) || stmt(b, l + 1, optional, asLambda)
+        if (isLambdaEntry && b.isArgs) b.lambdaArgsDepth--
 
         return b.exitSection(ok)
     }
@@ -59,22 +48,30 @@ object GdStmtParser : GdBaseParser {
         ok = ok && b.consumeToken(INDENT)
         b.pin(ok)
 
-        ok = ok && stmt(b, l + 1, false, asLambda).ok
-        var moved = true
+        ok = ok && stmt(b, l + 1, false, asLambda)
+        moved = true
         while (ok && moved) {
-            val res = stmt(b, l + 1, true, asLambda)
-            ok = res.ok
-            moved = res.moved
+            if (asLambda && !b.isArgs) b.passToken(NEW_LINE)
+            ok = ok && stmt(b, l + 1, true, asLambda)
         }
 
+        ok && asLambda && b.passToken(NEW_LINE)
         if (asLambda) {
             if (b.nextTokenIs(DEDENT)) {
-                if (!b.followingTokensAre(DEDENT, NEW_LINE) && !b.followingTokensAre(DEDENT, END_STMT)) {
+                if (b.isArgs && b.followingTokensAre(DEDENT, COMMA)) {
+                    // Lambda ends, COMMA signals next argument — consume DEDENT
+                    b.consumeToken(DEDENT)
+                } else if (!b.followingTokensAre(DEDENT, NEW_LINE) && !b.followingTokensAre(DEDENT, END_STMT)) {
                     b.remapCurrentToken(NEW_LINE)
                 } else {
                     b.consumeToken(DEDENT)
                 }
+            } else if (b.isArgs && b.nextTokenIs(COMMA, RRBR)) {
+                // Lambda body in args ends at comma/rparen without DEDENT
             }
+        } else if (b.lambdaArgsDepth > 0 && b.nextTokenIs(COMMA, RRBR)) {
+            // Inside compound statement body within lambda in args:
+            // COMMA/RRBR terminates the suite without DEDENT
         } else {
             ok = ok && b.consumeToken(DEDENT)
         }
@@ -89,50 +86,45 @@ object GdStmtParser : GdBaseParser {
         return ok || b.pinned() || optional
     }
 
-    private fun stmt(b: GdPsiBuilder, l: Int, optional: Boolean, asLambda: Boolean): StmtParsingResult {
-        if (!b.recursionGuard(l, "InnerStmt")) return StmtParsingResult(false, false)
+    private fun stmt(b: GdPsiBuilder, l: Int, optional: Boolean, asLambda: Boolean): Boolean {
+        if (!b.recursionGuard(l, "InnerStmt")) return false
+        moved = false
 
-        // multiline lambda
-        if (optional && asLambda && b.nextTokenIs(NEW_LINE)){
-            b.passToken(NEW_LINE)
-            return StmtParsingResult(true, true)
-        }
+        val matched = parsers.any {
+            if (asLambda && it is GdEmptyStmtParser) return@any false
+            b.enterSection(it.STMT_TYPE)
+            var ok = it.parse(b, l + 1)
+            ok = ok || b.pinned()
 
-        // Track builder position before attempting to parse the statement
-        val startPos = b.positionAt
-
-        val parsed =
-            parsers.any {
-                if (asLambda && it is GdEmptyStmtParser) return@any false
-                b.enterSection(it.STMT_TYPE)
-                var ok = it.parse(b, l + 1)
-                ok = ok || b.pinned()
-
-                if (asLambda) {
-                    ok = ok && b.nextTokenIs(SEMICON, RRBR, COMMA)
-                    if (ok && b.isArgs) {
-                        b.passToken(SEMICON) || b.nextTokenIs(COMMA)
-                    }
-                } else {
-                    ok = ok && it.parseEndStmt(b)
+            if (asLambda) {
+                ok = ok && b.nextTokenIs(SEMICON, NEW_LINE, RRBR, DEDENT, COMMA)
+                if (ok && b.isArgs) {
+                    b.passToken(NEW_LINE) || b.passToken(SEMICON) || b.nextTokenIs(COMMA)
                 }
-
-                ok = ok || b.pinned()
-                if (ok && !asLambda) {
-                    if (it.endWithEndStmt) GdRecovery.stmt(b)
-                    else GdRecovery.stmtNoLine(b)
-                }
-                b.exitSection(ok, true)
-
-                ok
+            } else {
+                ok = ok && it.parseEndStmt(b)
             }
 
-        if (parsed && b.positionAt > startPos) return StmtParsingResult(true, true)
+            ok = ok || b.pinned()
+            if (ok && !asLambda) {
+                if (it.endWithEndStmt) GdRecovery.stmt(b)
+                else GdRecovery.stmtNoLine(b)
+            }
+            b.exitSection(ok, true)
+
+            ok
+        }
+
+        // Overwrite moved to reflect THIS call's result, not any inner/recursive call
+        moved = matched
+
+        if (matched) return true
 
         if (!optional) {
             b.error("Statement expected")
         }
 
-        return StmtParsingResult(optional, b.positionAt > startPos)
+        return optional
     }
+
 }

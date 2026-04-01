@@ -5,13 +5,13 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
-import com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons
+import GdScriptPluginIcons
 import gdscript.GdScriptBundle
 import javax.swing.Icon
 
 class GdColorSettingsPage : ColorSettingsPage {
     override fun getIcon(): Icon {
-        return RiderPluginsGodotCommunityIcons.GDScript
+        return GdScriptPluginIcons.Icons.GDScript
     }
 
     override fun getHighlighter(): SyntaxHighlighter {

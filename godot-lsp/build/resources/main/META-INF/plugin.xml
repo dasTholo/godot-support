@@ -1,0 +1,29 @@
+<idea-plugin>
+  <idea-version since-build="253.31033" />
+  <id>godot.lsp</id>
+  <name>Godot LSP</name>
+  <vendor>Custom Build</vendor>
+  <description><![CDATA[Connects to the Godot 4 GDScript Language Server for live diagnostics,
+code completion, and documentation in any JetBrains IDE.
+
+<p><strong>Features:</strong></p>
+<ul>
+    <li>Auto-detects Godot projects via project.godot</li>
+    <li>Connects to the running Godot editor's LSP server</li>
+    <li>Live diagnostics (errors and warnings)</li>
+    <li>Code completion with node path support ($)</li>
+    <li>Status bar widget showing connection state</li>
+    <li>Configurable port and Godot path</li>
+</ul>
+
+<p><strong>Usage:</strong> Open a Godot project, start the Godot editor,
+then open any .gd file. The plugin connects automatically.</p>]]></description>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.rustrover.godot.community</depends>
+  <extensions defaultExtensionNs="com.intellij">
+    <platform.lsp.serverSupportProvider implementation="godot.lsp.service.GodotLspServerSupportProvider" />
+    <applicationService serviceImplementation="godot.lsp.settings.GodotLspSettings" />
+    <applicationConfigurable instance="godot.lsp.settings.GodotLspSettingsConfigurable" id="godot.lsp.settings" displayName="Godot LSP" parentId="tools" />
+    <notificationGroup id="Godot LSP" displayType="STICKY_BALLOON" />
+  </extensions>
+</idea-plugin>

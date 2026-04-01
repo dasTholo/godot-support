@@ -1,49 +1,53 @@
-import com.intellij.rider.plugins.godot.gdscript.icons.RiderPluginsGodotGdscriptIcons
+import com.intellij.openapi.util.IconLoader
+import com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons
 
 // IJ will automatically add `_dark` to the basename of the SVG file if in Dark theme.
 
 class GdScriptPluginIcons {
     class Icons {
         companion object {
-            val GodotLogo = RiderPluginsGodotGdscriptIcons.GodotEditor.Godot
-            val BackupIcon = RiderPluginsGodotGdscriptIcons.GodotEditor.Object
-            val GodotFile = RiderPluginsGodotGdscriptIcons.GodotEditor.GodotFile
-            val GodotConfigFile = RiderPluginsGodotGdscriptIcons.GodotEditor.FileDialog
-            val GodotProjectFile = RiderPluginsGodotGdscriptIcons.GodotEditor.FileDialog
+            val GodotLogo = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Godot
+            val BackupIcon = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Object
+            val GodotFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GodotFile
+            val GodotConfigFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.FileDialog
+            val GodotProjectFile = RustRoverPluginsGodotGdscriptIcons.GodotEditor.FileDialog
+            val GDScript = IconLoader.getIcon("icons/GDScript.svg", GdScriptPluginIcons::class.java)
+            val Godot = IconLoader.getIcon("icons/Godot.svg", GdScriptPluginIcons::class.java)
+            val GodotDisconnected = IconLoader.getIcon("icons/GodotDisconnected.svg", GdScriptPluginIcons::class.java)
         }
     }
 
     class GDScriptIcons{
         companion object{
-            val METHOD_MARKER = RiderPluginsGodotGdscriptIcons.GodotEditor.MemberMethod
-            val VAR_MARKER = RiderPluginsGodotGdscriptIcons.GodotEditor.MemberProperty
-            val CONST_MARKER = RiderPluginsGodotGdscriptIcons.GodotEditor.MemberConstant
-            val ENUM_MARKER = RiderPluginsGodotGdscriptIcons.GodotEditor.Enum
-            val SIGNAL_MARKER = RiderPluginsGodotGdscriptIcons.GodotEditor.MemberSignal
-            val OBJECT = RiderPluginsGodotGdscriptIcons.GodotEditor.Object
-            val SIGNAL = RiderPluginsGodotGdscriptIcons.GodotEditor.Signal
-            val SLOT = RiderPluginsGodotGdscriptIcons.GodotEditor.Slot
-            val LINK = RiderPluginsGodotGdscriptIcons.GodotEditor.LinkButton
-            val ERROR = RiderPluginsGodotGdscriptIcons.GodotEditor.StatusError
-            val RESOURCE = RiderPluginsGodotGdscriptIcons.GodotEditor.Mesh
-            val STRING = RiderPluginsGodotGdscriptIcons.GodotEditor.String
-            val OVERRIDE = RiderPluginsGodotGdscriptIcons.GodotEditor.MethodOverride
-            val ANIMATION = RiderPluginsGodotGdscriptIcons.GodotEditor.Animation
-            val NODE = RiderPluginsGodotGdscriptIcons.GodotEditor.Node
+            val METHOD_MARKER = RustRoverPluginsGodotGdscriptIcons.GodotEditor.MemberMethod
+            val VAR_MARKER = RustRoverPluginsGodotGdscriptIcons.GodotEditor.MemberProperty
+            val CONST_MARKER = RustRoverPluginsGodotGdscriptIcons.GodotEditor.MemberConstant
+            val ENUM_MARKER = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Enum
+            val SIGNAL_MARKER = RustRoverPluginsGodotGdscriptIcons.GodotEditor.MemberSignal
+            val OBJECT = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Object
+            val SIGNAL = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Signal
+            val SLOT = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Slot
+            val LINK = RustRoverPluginsGodotGdscriptIcons.GodotEditor.LinkButton
+            val ERROR = RustRoverPluginsGodotGdscriptIcons.GodotEditor.StatusError
+            val RESOURCE = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Mesh
+            val STRING = RustRoverPluginsGodotGdscriptIcons.GodotEditor.String
+            val OVERRIDE = RustRoverPluginsGodotGdscriptIcons.GodotEditor.MethodOverride
+            val ANIMATION = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Animation
+            val NODE = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Node
         }
     }
 
     class TscnIcons {
         companion object {
-            val FILE = RiderPluginsGodotGdscriptIcons.TscnFile
-            val InstanceOptions = RiderPluginsGodotGdscriptIcons.GodotEditor.InstanceOptions
-            val Script = RiderPluginsGodotGdscriptIcons.GodotEditor.Script
-            val SceneUniqueName = RiderPluginsGodotGdscriptIcons.GodotEditor.SceneUniqueName
-            val GuiVisibilityXray = RiderPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityXray
-            val GuiVisibilityVisible = RiderPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityVisible
-            val GuiVisibilityVisibleDark = RiderPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityVisibleDark
-            val GuiVisibilityHidden = RiderPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityHidden
-            val GuiVisibilityHiddenDark = RiderPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityHiddenDark
+            val FILE = RustRoverPluginsGodotGdscriptIcons.TscnFile
+            val InstanceOptions = RustRoverPluginsGodotGdscriptIcons.GodotEditor.InstanceOptions
+            val Script = RustRoverPluginsGodotGdscriptIcons.GodotEditor.Script
+            val SceneUniqueName = RustRoverPluginsGodotGdscriptIcons.GodotEditor.SceneUniqueName
+            val GuiVisibilityXray = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityXray
+            val GuiVisibilityVisible = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityVisible
+            val GuiVisibilityVisibleDark = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityVisibleDark
+            val GuiVisibilityHidden = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityHidden
+            val GuiVisibilityHiddenDark = RustRoverPluginsGodotGdscriptIcons.GodotEditor.GuiVisibilityHiddenDark
         }
     }
 }

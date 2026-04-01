@@ -1,5 +1,3 @@
-rootProject.name = "rider-gdscript"
+rootProject.name = "rustrover-gdscript"
 
-includeBuild("../community")
 include("sdkBuilder")
-include("gdscript")

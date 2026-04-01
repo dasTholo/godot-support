@@ -2,7 +2,7 @@ package gdscript.run
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.rider.plugins.godot.community.icons.RiderPluginsGodotCommunityIcons
+import GdScriptPluginIcons
 import gdscript.GdScriptBundle
 import javax.swing.Icon
 
@@ -17,7 +17,7 @@ class GdRunConfigurationType : ConfigurationType {
 
     override fun getConfigurationTypeDescription(): String = GdScriptBundle.message("run.configuration.type.description")
 
-    override fun getIcon(): Icon = RiderPluginsGodotCommunityIcons.GDScript
+    override fun getIcon(): Icon = GdScriptPluginIcons.Icons.GDScript
 
     override fun getId(): String = ID
 

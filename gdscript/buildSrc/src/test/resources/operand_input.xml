@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector2" version="4.6">
+    <operators>
+        <operator name="operator !=">
+            <return type="bool" />
+            <param index="0" name="right" type="Vector2" />
+            <description>Returns true if not equal.</description>
+        </operator>
+        <operator name="operator *">
+            <return type="Vector2" />
+            <param index="0" name="right" type="float" />
+            <description>Multiplies by scalar.</description>
+        </operator>
+        <operator name="operator ==">
+            <return type="bool" />
+            <param index="0" name="right" type="Vector2" />
+            <description>Returns true if equal.</description>
+        </operator>
+        <operator name="operator unary+">
+            <return type="Vector2" />
+            <description>Unary plus.</description>
+        </operator>
+        <operator name="operator ~">
+            <return type="Vector2" />
+            <description>Bitwise not.</description>
+        </operator>
+    </operators>
+</class>

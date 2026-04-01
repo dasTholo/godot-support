@@ -47,14 +47,10 @@ repositories {
 val buildConfiguration: String by project
 
 dependencies {
-    compileOnly(":rider-godot-community")
-
     intellijPlatform {
         intellijIdea(libs.versions.ideaSdk) { useInstaller = false }
         // rider(libs.versions.riderSdk, useInstaller = false) // instead of touching this, just use runRider gradle task
         jetbrainsRuntime()
-        // you need to compile the community plugin in advance, or this would fail. I haven't found a workaround
-        localPlugin(repoRoot.resolve("community/build/distributions/rider-godot-community.zip"))
         testFramework(TestFrameworkType.Bundled)
 
         bundledPlugin("com.intellij.modules.json")
@@ -68,11 +64,17 @@ dependencies {
     testImplementation(libs.openTest4J)
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
 }
 
 intellijPlatform{
     instrumentCode = false
     buildSearchableOptions = buildConfiguration != "Debug"
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "253.31033"
+        }
+    }
 }
 
 grammarKit {
@@ -140,8 +142,8 @@ tasks {
     }
 
     // run it to start Rider from SDK
-    val runRider by intellijPlatformTesting.runIde.registering {
-        type = IntelliJPlatformType.Rider
+    val runRustRover by intellijPlatformTesting.runIde.registering {
+        type = IntelliJPlatformType.RustRover
         version = libs.versions.riderSdk
         useInstaller = false
         task {
@@ -152,7 +154,7 @@ tasks {
             val sdkDir = project.layout.buildDirectory.dir("sdk").get().asFile
 
             // sandboxPluginsDirectory is not adequate when calling runRider
-            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRider", pluginName, "sdk")
+            val target2 = Path(sandboxDirectory.get().asFile.absolutePath, "plugins_runRustRover", pluginName, "sdk")
             logger.lifecycle("Copying SDK from $sdkDir to $target2")
             project.copy {
                 from(sdkDir)
@@ -162,9 +164,6 @@ tasks {
     }
 
     runIde {
-        if (gradle.includedBuilds.any { it.name == "community" }) {
-            dependsOn(gradle.includedBuild("community").task(":buildPlugin"))
-        }
         jvmArgs("-Xmx1500m")
     }
 

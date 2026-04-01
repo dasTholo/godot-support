@@ -171,6 +171,8 @@ object PsiGdExprUtil {
                         }
 
                         return ""
+                    } else if (method == "get_main_loop" || method.endsWith(".get_main_loop")) {
+                        return "SceneTree"
                     }
                     expr.expr.returnType
                 }

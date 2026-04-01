@@ -3,8 +3,8 @@ package tscn.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
-import com.jetbrains.rider.godot.community.tscn.TscnFileType
-import com.jetbrains.rider.godot.community.tscn.TscnLanguage
+import tscn.TscnFileType
+import tscn.TscnLanguage
 
 class TscnFile : PsiFileBase {
 

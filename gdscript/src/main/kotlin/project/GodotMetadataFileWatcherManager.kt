@@ -1,0 +1,22 @@
+package project
+
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.ProjectActivity
+import project.actions.GodotToolbarUpdateService
+import project.utils.GodotCommunityUtil
+
+class GodotMetadataFileWatcherManager : ProjectActivity {
+    override suspend fun execute(project: Project) {
+        // Initialize the lazy service
+        GodotToolbarUpdateService.getInstance(project)
+        val metadataService = GodotMetadataService.getInstance(project)
+
+        GodotCommunityUtil.getGodotProjectBasePathFlow(project).collect { basePath ->
+            if (basePath == null) {
+                metadataService.stopWatcher()
+            } else {
+                metadataService.startWatcher(basePath)
+            }
+        }
+    }
+}

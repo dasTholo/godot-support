@@ -19,7 +19,7 @@ import gdscript.psi.utils.PsiGdFileUtil
 import gdscript.run.GdConfigurationFactory
 import gdscript.run.GdRunConfiguration
 import gdscript.run.GdRunConfigurationType
-import gdscript.utils.isRiderGodotSupportPluginInstalled
+import gdscript.utils.isRustRoverGodotSupportPluginInstalled
 import tscn.psi.utils.TscnResourceUtil
 
 class GdRunAction : RunAnythingAction {
@@ -44,7 +44,7 @@ class GdRunAction : RunAnythingAction {
 
     override fun update(e: AnActionEvent) {
         //RIDER-126489 Run configuration in the GdScript plugin
-        if (PluginManagerCore.isRiderGodotSupportPluginInstalled())
+        if (PluginManagerCore.isRustRoverGodotSupportPluginInstalled())
             e.presentation.isEnabledAndVisible = false
         super.update(e)
     }

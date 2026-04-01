@@ -1,23 +1,28 @@
 package gdscript.parser.common
 
+import com.intellij.psi.TokenType
 import gdscript.parser.GdBaseParser
 import gdscript.parser.GdPsiBuilder
 import gdscript.parser.expr.GdExprParser
 import gdscript.parser.recovery.GdRecovery
-import gdscript.psi.GdTypes.ARG_EXPR
-import gdscript.psi.GdTypes.ARG_LIST
-import gdscript.psi.GdTypes.COMMA
+import gdscript.psi.GdTypes.*
 
 object GdArgListParser : GdBaseParser {
 
     override fun parse(b: GdPsiBuilder, l: Int, optional: Boolean): Boolean {
         if (!b.recursionGuard(l, "ArgList")) return false
-
         b.enterSection(ARG_LIST)
 
         var ok = b.pin(argExpr(b, l + 1))
         while (b.consumeToken(COMMA, true)) {
+            // Skip indentation tokens between arguments (from lambda-in-args context)
+            while (b.nextTokenIs(NEW_LINE, DEDENT, INDENT)) {
+                b.remapCurrentToken(TokenType.WHITE_SPACE)
+            }
             argExpr(b, l + 1)
+        }
+        while (ok && b.nextTokenIs(INDENT, DEDENT)) {
+            b.remapCurrentToken(TokenType.WHITE_SPACE)
         }
 
         ok && GdRecovery.argumentList(b)
@@ -30,7 +35,7 @@ object GdArgListParser : GdBaseParser {
         b.recursionGuard(l + 1, "ArgExpr")
         b.enterSection(ARG_EXPR)
 
-        val ok = GdExprParser.parse(b, l + 1, false)
+        var ok = GdExprParser.parse(b, l + 1, false)
         b.exitSection(ok)
 
         return ok

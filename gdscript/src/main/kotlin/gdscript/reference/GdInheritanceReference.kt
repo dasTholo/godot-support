@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import gdscript.completion.GdLookup
 import gdscript.completion.utils.GdClassCompletionUtil
 import gdscript.completion.utils.GdClassCompletionUtil.lookup
+import gdscript.extension.GdExtensionRustResolver
 import gdscript.index.impl.GdFileResIndex
 import gdscript.psi.GdClassDeclTl
 import gdscript.psi.GdElementFactory
@@ -54,7 +55,9 @@ class GdInheritanceReference : PsiReferenceBase<PsiElement> {
         return cache.resolveWithCaching(
             this,
             ResolveCache.Resolver { _, _ ->
-                GdClassUtil.getClassIdElement(key, element, project)
+                GdClassUtil.getClassIdElement(key, element, project)?.let {
+                    GdExtensionRustResolver.resolveToRustIfStub(it, project)
+                }
             },
             false,
             false,

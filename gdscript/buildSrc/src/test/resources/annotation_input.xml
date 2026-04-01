@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="@GDScript" version="4.6">
+    <annotations>
+        <annotation name="@export" qualifiers="">
+        </annotation>
+        <annotation name="@export_category" qualifiers="">
+            <param index="0" name="name" type="String" />
+        </annotation>
+        <annotation name="@export_enum" qualifiers="vararg">
+            <param index="0" name="names" type="String" />
+        </annotation>
+        <annotation name="@export_group" qualifiers="">
+            <param index="0" name="name" type="String" />
+            <param index="1" name="prefix" type="String" default="&quot;&quot;" />
+        </annotation>
+        <annotation name="@onready" qualifiers="">
+        </annotation>
+    </annotations>
+</class>

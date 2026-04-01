@@ -46,6 +46,7 @@ class GdGodotTest : GdParsingTestCase() {
     @Test fun testif_after_lambda() = doTest(true, true)
     @Test fun testin() = doTest(true, true)
     @Test fun testis_not_operator() = doTest(true, true)
+    @Test fun testnot_in_operator() = doTest(true, true)
     @Test fun testlambda_callable() = doTest(true, true)
     @Test fun testlambda_callable_multiline() = doTest(true, true)
     @Test fun testcallableInCtor() = doTest(true, true)
@@ -99,6 +100,7 @@ class GdGodotTest : GdParsingTestCase() {
     @Test fun testwhile() = doTest(true, true)
 
     @Test fun testsignal_connect_func() = doTest(true, false)
+    @Test fun testsignal_connect_multiline_lambda() = doTest(true, true)
     @Test fun testlambdaCallExpr() = doTest(true, true)
 
     @Test fun testdocumentation_comments() = doTest(true, true)

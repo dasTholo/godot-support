@@ -11,11 +11,11 @@ import com.intellij.ui.ScrollPaneFactory
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.concurrency.AppExecutorUtil
-import com.jetbrains.rider.godot.community.gdscript.GdFileType
+import gdscript.GdFileType
 import gdscript.index.impl.GdFileResIndex
 import gdscript.psi.utils.GdClassUtil
 import gdscript.utils.VirtualFileUtil.getPsiFile
-import com.jetbrains.rider.godot.community.tscn.TscnFileType
+import tscn.TscnFileType
 import org.jetbrains.annotations.NonNls
 import tscn.psi.TscnFile
 import tscn.psi.TscnNodeHeader

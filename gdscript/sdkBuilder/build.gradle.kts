@@ -9,25 +9,27 @@ repositories {
     mavenCentral()
 }
 
-val phpDir = rootProject.projectDir.resolve("php")
 val resultingDir = layout.buildDirectory.dir("artifacts")
 val buildNumber = System.getenv("BUILD_NUMBER") ?: "SNAPSHOT"
 val baseVersion = property("baseVersion")?.toString() ?: error("Base version is not specified")
 val fullVersion = "$baseVersion.$buildNumber"
 
-val phpSdkOutput = phpDir.resolve("gdscriptsdk.tar.xz")
+val sdkOutput = layout.buildDirectory.file("sdk/sdk.tar.xz")
 val resultingSdkBaseName = "gdscriptsdk"
 val sdkResultingFullName = "$resultingSdkBaseName-$fullVersion.tar.xz"
 
-val runPhpScript = tasks.register<Exec>("runPhpScript") {
-    workingDir = phpDir
-    commandLine("php", phpDir.resolve("sdkBuilder.php").absolutePath)
-    outputs.file(phpSdkOutput)
+val runSdkBuilder = tasks.register("runSdkBuilder") {
+    outputs.file(sdkOutput)
+
+    doLast {
+        val sdkDir = layout.buildDirectory.dir("sdk").get().asFile
+        sdk.SdkBuilder.build(sdkDir)
+    }
 }
 
 val prepareTar = tasks.register<Copy>("prepareTarForPublish") {
-    dependsOn(runPhpScript)
-    from(phpSdkOutput)
+    dependsOn(runSdkBuilder)
+    from(sdkOutput)
     into(resultingDir)
     rename { sdkResultingFullName }
 
@@ -72,7 +74,7 @@ publishing {
                 extension = "tar.xz.sha512"
                 classifier = null
             }
-            groupId = "rider-gdscript.sdkBuilder"
+            groupId = "rustrover-gdscript.sdkBuilder"
             artifactId = resultingSdkBaseName
             version = fullVersion
         }

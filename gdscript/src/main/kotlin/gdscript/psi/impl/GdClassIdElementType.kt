@@ -6,7 +6,7 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.rider.godot.community.gdscript.GdLanguage
+import gdscript.GdLanguage
 import gdscript.index.Indices
 import gdscript.index.stub.GdClassIdStub
 import gdscript.index.stub.GdClassIdStubImpl
