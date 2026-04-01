@@ -7,6 +7,7 @@
 **/obj
 **/bin
 
+godot-lsp/
 gdscript/.intellijPlatform
 gdscript/build
 gdscript/protocol/build
