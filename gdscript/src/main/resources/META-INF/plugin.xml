@@ -26,6 +26,7 @@
     <godotProjectProvider implementation="gdscript.utils.GdScriptGodotProjectProvider" />
   </extensions>
 
+
   <extensions defaultExtensionNs="com.intellij">
     <lang.parserDefinition language="GdScript" implementationClass="gdscript.GdParserDefinition"/>
     <highlightErrorFilter implementation="gdscript.codeInsight.highlighting.GdErrorFilter"/>

@@ -295,7 +295,6 @@ TRIPLE_DOUBLE_QUOTED_LITERAL = \"\"\" {TRIPLE_DOUBLE_QUOTED_CONTENT}* \"\"\"
     }
 
     {SINGLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
-    {TRIPLE_SINGLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
     {DOUBLE_QUOTED_LITERAL}        { return dedentRoot(GdTypes.STRING); }
     {TRIPLE_DOUBLE_QUOTED_LITERAL} { return dedentRoot(GdTypes.STRING); }
 
