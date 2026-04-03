@@ -98,6 +98,11 @@
     <lang.syntaxHighlighterFactory language="Tscn" implementationClass="tscn.highlighter.TscnSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="tscn.highlighter.TscnColorSettingsPage"/>
 
+    <!-- Go to Symbol / Go to Class / Type Hierarchy (enables Serena symbol resolution) -->
+    <gotoSymbolContributor implementation="gdscript.symbol.GdGotoSymbolContributor"/>
+    <gotoClassContributor implementation="gdscript.symbol.GdGotoClassContributor"/>
+    <typeHierarchyProvider language="GdScript" implementationClass="gdscript.hierarchy.GdTypeHierarchyProvider"/>
+
     <!-- Completions -->
     <completion.contributor language="GdScript" order="first" implementationClass="gdscript.completion.GdNumberPositionCompletionContributor" />
     <completion.contributor   language="GdScript" order="last" implementationClass="gdscript.completion.GdKeywordContributor"/>
