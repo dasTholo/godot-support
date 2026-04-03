@@ -117,6 +117,21 @@ Implementiert `TypeHierarchyProvider` für GDScript-Klassen.
 
 Das gdscript RustRover Plugin wird auf Version **0.26.0** aktualisiert.
 
+#### 6. Vereinfachung `GdExtensionStubWriter.collectInheritedNames()`
+
+`GdExtensionStubWriter.collectInheritedNames()` (Zeilen 94-128) traversiert die Vererbungskette manuell per Text-Parsing der SDK `.gd`-Dateien auf dem Dateisystem. Das reimplementiert Logik, die in `GdInheritanceUtil` und `GdClassMemberUtil.collectFromParents()` bereits auf PSI/Index-Ebene existiert.
+
+**Aktuell (Text-Parsing):**
+```kotlin
+// ~35 Zeilen manuelles Parsen von extends, func, var, signal aus .gd-Dateien
+private fun collectInheritedNames(baseClass: String, sdkPath: Path): Set<String>
+```
+
+**Vereinfacht (PSI/Index):**
+Ersetzen durch PSI-basierte Abfrage via `GdClassMemberUtil.collectFromParents()` oder direkte Index-Lookups. Die SDK-Stubs sind zum Zeitpunkt der GDExtension-Stub-Generierung bereits indexiert (SDK wird zuerst als Library registriert).
+
+**Vorteil:** Weniger duplizierter Code, konsistente Vererbungsauflösung über das gesamte Plugin.
+
 ### Verifikation
 
 Nach dem Build und der Installation des Plugins in RustRover:
