@@ -2,8 +2,7 @@
 
 - In order to dedent on backspace instead of deleting a line, you can change editor's settings under:
 
-IntelliJ: Editor -> General -> Smart Keys -> Unindent on Backspace  
-Rider: Editor -> General -> Typing Assistance -> Unindent on Backspace  
+RustRover / IntelliJ: Editor -> General -> Smart Keys -> Unindent on Backspace  
 ... or just search for "Unindent"
 
 - By default, few of annotators are off due dynamics of Godot and GdScript, you can change it in settings, but then

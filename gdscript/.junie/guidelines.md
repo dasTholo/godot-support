@@ -1,4 +1,4 @@
-Project-specific development guidelines for gdscript module (JetBrains GDScript plugin)
+Project-specific development guidelines for gdscript module (GDScript plugin for RustRover)
 
 This document captures practical, project-specific knowledge to help advanced contributors build, test, and extend the GDScript plugin efficiently.
 
@@ -13,9 +13,9 @@ IntelliJ Platform and SDK preparation
 Common tasks
 - Build (verifies sources compile and prepares the plugin):
   - ./gradlew build
-- Run the plugin in a sandboxed IDE (IntelliJ IDEA Community):
-  - ./gradlew runIde
-  - Notes: runIde is configured with -Xmx1500m in gradle; adjust via Gradle property if needed.
+- Run the plugin in a sandboxed RustRover:
+  - ./gradlew runRustRover
+  - Notes: runRustRover is configured with -Xmx1500m in gradle; adjust via Gradle property if needed.
 - Clean:
   - ./gradlew clean
 
@@ -48,7 +48,7 @@ Run a specific test class or method is slower, prefer running all tests at once
   - ./gradlew test --tests "com.jetbrains.godot.gdscript.formatter.GdFormattingTest.testLambdaInConnectIndent"
 
 IDE test execution
-- You can run tests from IntelliJ IDEA using Gradle run configurations. Ensure Gradle JDK is set to 21, and “Delegate IDE build/run to Gradle” is enabled for consistent behavior.
+- You can run tests from RustRover or IntelliJ IDEA using Gradle run configurations. Ensure Gradle JDK is set to 21, and "Delegate IDE build/run to Gradle" is enabled for consistent behavior.
 
 Adding new tests
 - Location: src/test/kotlin
@@ -56,4 +56,4 @@ Adding new tests
 4. Additional development information
 
 Contact points
-- Start from README.md for plugin overview and links to features, changelog, and marketplace. For Grammar-Kit or PSI concerns, consult IntelliJ Platform SDK docs.
+- Start from README.md for plugin overview and links to features and changelog. For Grammar-Kit or PSI concerns, consult IntelliJ Platform SDK docs.

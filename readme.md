@@ -1,5 +1,3 @@
-[![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://github.com/JetBrains#jetbrains-on-github)
-
 # Godot Support for RustRover
 
 Community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-support) for **RustRover**.
