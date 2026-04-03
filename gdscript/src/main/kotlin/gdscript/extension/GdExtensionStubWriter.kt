@@ -1,6 +1,13 @@
 package gdscript.extension
 
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.Project
+import com.intellij.psi.util.PsiTreeUtil
+import gdscript.index.impl.GdClassNamingIndex
+import gdscript.psi.GdClassVarDeclTl
+import gdscript.psi.GdMethodDeclTl
+import gdscript.psi.GdSignalDeclTl
+import gdscript.psi.utils.GdInheritanceUtil
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -9,7 +16,7 @@ import java.nio.file.Path
  */
 object GdExtensionStubWriter {
 
-    fun writeStubs(types: List<GdExtTypeInfo>, outputDir: Path, sdkPath: Path?) {
+    fun writeStubs(types: List<GdExtTypeInfo>, outputDir: Path, sdkPath: Path?, project: Project? = null) {
         if (types.isEmpty()) return
 
         Files.createDirectories(outputDir)
@@ -22,11 +29,15 @@ object GdExtensionStubWriter {
 
         for (type in types) {
             val file = outputDir.resolve("${type.name}.gd")
-            val inherited = if (sdkPath != null) {
-                inheritedCache.getOrPut(type.inherits) {
-                    collectInheritedNames(type.inherits, sdkPath)
+            val inherited = inheritedCache.getOrPut(type.inherits) {
+                if (project != null) {
+                    collectInheritedNamesPsi(type.inherits, project)
+                } else if (sdkPath != null) {
+                    collectInheritedNamesText(type.inherits, sdkPath)
+                } else {
+                    emptySet()
                 }
-            } else emptySet()
+            }
             val content = generateStub(type, inherited)
             Files.writeString(file, content)
         }
@@ -87,11 +98,30 @@ object GdExtensionStubWriter {
         return sb.toString()
     }
 
+    private fun collectInheritedNamesPsi(baseClass: String, project: Project): Set<String> {
+        val classElement = GdClassNamingIndex.INSTANCE.getGlobally(baseClass, project).firstOrNull()
+            ?.containingFile ?: return emptySet()
+
+        val names = mutableSetOf<String>()
+        var current: com.intellij.psi.PsiElement? = classElement
+        val visited = mutableSetOf<com.intellij.psi.PsiElement>()
+        while (current != null && visited.add(current)) {
+            val methods = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdMethodDeclTl::class.java)
+            val vars = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdClassVarDeclTl::class.java)
+            val signals = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdSignalDeclTl::class.java)
+            methods.forEach { names.add(it.name) }
+            vars.forEach { names.add(it.name) }
+            signals.forEach { names.add(it.name) }
+            current = GdInheritanceUtil.getExtendedElement(current, project)
+        }
+        return names
+    }
+
     /**
      * Collect all member names (methods, properties, signals) from SDK .gd files
      * for a given base class and its ancestors via the `extends` chain.
      */
-    private fun collectInheritedNames(baseClass: String, sdkPath: Path): Set<String> {
+    private fun collectInheritedNamesText(baseClass: String, sdkPath: Path): Set<String> {
         val names = mutableSetOf<String>()
         var current: String? = baseClass
 
