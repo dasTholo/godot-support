@@ -1,5 +1,6 @@
 package gdscript.extension
 
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.PsiTreeUtil
@@ -99,22 +100,24 @@ object GdExtensionStubWriter {
     }
 
     private fun collectInheritedNamesPsi(baseClass: String, project: Project): Set<String> {
-        val classElement = GdClassNamingIndex.INSTANCE.getGlobally(baseClass, project).firstOrNull()
-            ?.containingFile ?: return emptySet()
+        return ReadAction.compute<Set<String>, Throwable> {
+            val classElement = GdClassNamingIndex.INSTANCE.getGlobally(baseClass, project).firstOrNull()
+                ?.containingFile ?: return@compute emptySet()
 
-        val names = mutableSetOf<String>()
-        var current: com.intellij.psi.PsiElement? = classElement
-        val visited = mutableSetOf<com.intellij.psi.PsiElement>()
-        while (current != null && visited.add(current)) {
-            val methods = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdMethodDeclTl::class.java)
-            val vars = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdClassVarDeclTl::class.java)
-            val signals = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdSignalDeclTl::class.java)
-            methods.forEach { names.add(it.name) }
-            vars.forEach { names.add(it.name) }
-            signals.forEach { names.add(it.name) }
-            current = GdInheritanceUtil.getExtendedElement(current, project)
+            val names = mutableSetOf<String>()
+            var current: com.intellij.psi.PsiElement? = classElement
+            val visited = mutableSetOf<com.intellij.psi.PsiElement>()
+            while (current != null && visited.add(current)) {
+                val methods = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdMethodDeclTl::class.java)
+                val vars = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdClassVarDeclTl::class.java)
+                val signals = PsiTreeUtil.getStubChildrenOfTypeAsList(current, GdSignalDeclTl::class.java)
+                methods.forEach { names.add(it.name) }
+                vars.forEach { names.add(it.name) }
+                signals.forEach { names.add(it.name) }
+                current = GdInheritanceUtil.getExtendedElement(current, project)
+            }
+            names
         }
-        return names
     }
 
     /**
