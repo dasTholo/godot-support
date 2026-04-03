@@ -1,30 +1,38 @@
-[![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://github.com/JetBrains#jetbrains-on-github)
-
 <div style="display: flex; align-items: center;">
     <a href="https://godotengine.org">
-        <img src="screens/godot.svg" alt="JetBrains" width="96">
+        <img src="screens/godot.svg" alt="Godot" width="96">
     </a>
     <img src="screens/plus.png">
-    <a href="https://www.jetbrains.com" data-ui-trademark="Copyright © 2000-2023 JetBrains s.r.o. JetBrains and the JetBrains logo are registered trademarks of JetBrains s.r.o.">
-        <img src="screens/jb_beam.svg" alt="Godot" width="96">
+    <a href="https://www.jetbrains.com/rust">
+        <img src="screens/jb_beam.svg" alt="RustRover" width="96">
     </a>
 </div>
 
-GdScript2 language plugin for JetBrains IDEs (IntelliJ IDEA, Rider, and all the others)  
-Supports Godot 4.0 and higher
+GDScript language plugin for RustRover — community fork of [JetBrains/godot-support](https://github.com/JetBrains/godot-support)  
+Supports Godot 4.6 and higher
 
 ## History
 
 This plugin was originally developed by David ([@IceExplosive](https://gitlab.com/IceExplosive)) and was available on
 GitLab and the JetBrains Marketplace. When the original author could no longer maintain the project, JetBrains took over
-its development to ensure continued support for the Godot community. We're grateful for David's work that laid
-the foundation for this plugin.
+its development. This community fork by DasTholo continues development with a focus on RustRover and Godot 4.6+.
 
 [Settings](documentation%2Fsettings.md)
 
 [List of features](documentation%2Ffeatures%2Ffeatures.md)
 
-[Marketplace page](https://plugins.jetbrains.com/plugin/20123-gdscript)
+## Recommended Godot Editor Settings
+
+When creating or editing GDScript files externally (in RustRover), Godot needs to detect these changes to generate `.uid` files and update its internal caches. Without this, you may see errors like *"Unrecognized UID"* or *"Could not find base class"* until the Godot editor is restarted.
+
+To enable automatic background rescanning, open **Editor → Editor Settings** in Godot and enable:
+
+| Setting | Path | Effect |
+|---------|------|--------|
+| Import resources when unfocused | `interface/editor/import_resources_when_unfocused` | Godot rescans the filesystem in the background, even without window focus |
+| Auto reload scripts on external change | `text_editor/behavior/files/auto_reload_scripts_on_external_change` | Automatically reloads scripts modified outside the editor |
+
+> **Note:** These are global Godot editor settings, not per-project settings. They apply to all projects.
 
 ## GdScript toolkit (not related to this project)
 
