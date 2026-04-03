@@ -95,7 +95,7 @@ Please report any issues you encounter - this is still yet to be battle tested
 </details>
 
 <details>
-    <summary>Run current scene (disabled in Rider)</summary>
+    <summary>Run current scene (disabled when RustRover Godot plugin is active)</summary>
     <img src="../../screens/features/line_marker/run_marker.png" />
 </details>
 
@@ -131,7 +131,7 @@ Please report any issues you encounter - this is still yet to be battle tested
     <img src="../../screens/features/hint/inlay.png" />
 </details>
 
-### Run configuration - start game from Editor  (disabled in Rider)
+### Run configuration - start game from Editor  (disabled when RustRover Godot plugin is active)
 
 <details>
     <summary>Add Godot's path</summary>

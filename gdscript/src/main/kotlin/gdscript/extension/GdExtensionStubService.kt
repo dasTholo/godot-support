@@ -73,7 +73,7 @@ class GdExtensionStubService(private val project: Project) {
             GdLibraryManager.extractSdkIfNeeded(version)
         } catch (_: Exception) { null }
 
-        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir, sdkPath)
+        GdExtensionStubWriter.writeStubs(enrichedTypeInfos, stubDir, sdkPath, project)
 
         // Step 5: Register as library
         GdLibraryManager.registerLibrary(LIBRARY_NAME, stubDir, project)
