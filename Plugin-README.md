@@ -90,6 +90,7 @@ Die drei Plugins (community, godot-lsp, gdscript) wurden zu einem einzigen Plugi
 - [ ] **GDExtension Rust PSI statt Regex:** `GdExtensionRustResolver` von Regex-Parsing auf RustRover Rust PSI API (`org.rust.lang`) umstellen. Vorteile: Type-Alias-Aufloesung, Cross-File/Cross-Crate-Typen, Robustheit bei ungewoehnlicher Formatierung, Macro-Expansion (`#[godot_api]`). Dependency: `org.rust.lang` Plugin (in RustRover gebundelt). Niedrige Prioritaet - [ ] add rustrover Overlay funktion to supress FalsePostiv Warnings und Errors
 - [ ] add inline comments to supress FalsePostiv Warnings und Errors
 - [ ] add more Jetbrains Rustrover funktion to handle this Supress falsepositives and more PSI tools?
+- [ ] **Serena GDScript Integration (v0.26.0):** `GdGotoSymbolContributor`, `GdGotoClassContributor` und `GdTypeHierarchyProvider` fuer Serena JetBrains Plugin. Schaltet `find_symbol`, `find_referencing_symbols`, `rename_symbol`, `get_supertypes`, `get_subtypes` frei. TypeHierarchy beruecksichtigt GDExtension-Rust-Klassen via `GdExtensionRustResolver.getBaseClass()`. Subtype-Suche ist O(n) ohne Cache — bei Bedarf kann ein Inverse-Index (`parentName → Set<childName>`) nachgeruestet werden. Siehe Spec: `docs/superpowers/specs/2026-04-03-serena-gdscript-integration-design.md`
 
 ## Bekannte Bugs
 
