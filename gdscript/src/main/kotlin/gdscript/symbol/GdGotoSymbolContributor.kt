@@ -31,7 +31,6 @@ class GdGotoSymbolContributor : ChooseByNameContributorEx {
         scope: GlobalSearchScope,
         filter: IdFilter?,
     ) {
-        val project = scope.project ?: return
         for (index in indices) {
             StubIndex.getInstance().processAllKeys(index.key, processor, scope, filter)
         }
