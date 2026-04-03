@@ -295,6 +295,11 @@
       restartRequired="false"/>
   </extensions>
 
+  <applicationListeners>
+    <listener class="gdscript.uid.GdUidFileListener"
+              topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+  </applicationListeners>
+
   <actions>
     <action id="GdCreateFileAction" class="gdscript.action.GdCreateFileAction" icon="com.intellij.rustrover.plugins.godot.gdscript.icons.RustRoverPluginsGodotGdscriptIcons.GDScript" >
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile" />
